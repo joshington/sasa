@@ -91,7 +91,7 @@ export default function Home() {
       {/* ================= FEATURES SECTION ================== */}
       <section id="features" className="px-6 md:px-20 py-20 bg-gray-50">
         <h2 className="text-3xl md:text-5xl font-bold text-center mb-16">
-          Why Students & Parents Love SASA
+          Why  SASA?
         </h2>
 
         <div className="grid sm:grid-cols-2 md:grid-cols-3 gap-8 md:gap-12">
