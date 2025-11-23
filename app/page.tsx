@@ -58,45 +58,35 @@ export default function Home() {
         </svg>
       </div>
 
-      {/* ================= WHATSAPP CHAT DEMO ================== */}
-      <section className="px-6 md:px-20 py-20 bg-white">
+      {/* ================= WHATSAPP CHAT DEMO ==================
+      
+        <section className="px-6 md:px-20 py-20 bg-white">
         <h2 className="text-3xl md:text-5xl font-bold text-center mb-12">WhatsApp Chat Demo</h2>
 
         <div className="max-w-md mx-auto bg-gray-100 rounded-xl shadow-lg border p-4">
           <div className="flex flex-col space-y-3 text-sm">
-
-            {/* Parent Message */}
-            <div className="self-end bg-green-600 text-white px-4 py-2 rounded-2xl rounded-br-none max-w-[80%]">
-              Hi, register my child for SASA.
-            </div>
-
-            {/* Bot Response */}
-            <div className="self-start bg-white border px-4 py-2 rounded-2xl rounded-bl-none max-w-[80%] shadow">
-              Sure! Please provide the student's name.
-            </div>
-
-            {/* Parent */}
-            <div className="self-end bg-green-600 text-white px-4 py-2 rounded-2xl rounded-br-none max-w-[80%]">
-              John Junior
-            </div>
-
-            {/* Bot */}
-            <div className="self-start bg-white border px-4 py-2 rounded-2xl rounded-bl-none max-w-[80%] shadow">
-              Great. Set a daily spend limit.
-            </div>
-
-            {/* Parent */}
-            <div className="self-end bg-green-600 text-white px-4 py-2 rounded-2xl rounded-br-none max-w-[80%]">
+      
+          <div className="self-end bg-green-600 text-white px-4 py-2 rounded-2xl rounded-br-none max-w-[80%]">
               5,000 UGX
             </div>
 
-            {/* Bot */}
-            <div className="self-start bg-white border px-4 py-2 rounded-2xl rounded-bl-none max-w-[80%] shadow">
+        <div className="self-start bg-white border px-4 py-2 rounded-2xl rounded-bl-none max-w-[80%] shadow">
               Done! John is now registered.
             </div>
           </div>
         </div>
       </section>
+      
+      */}
+
+
+
+      
+
+           
+            
+            {/* Bot */}
+            
 
       {/* ================= FEATURES SECTION ================== */}
       <section id="features" className="px-6 md:px-20 py-20 bg-gray-50">
