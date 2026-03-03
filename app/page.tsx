@@ -1,3 +1,5 @@
+import Image from "next/image";
+
 export default function Home() {
   return (
     <main className="min-h-screen flex flex-col bg-white text-gray-900">
@@ -13,13 +15,15 @@ export default function Home() {
           {/* TEXT */}
           <div className="max-w-xl space-y-6 animate-fadeInUp text-center md:text-left">
             <h1 className="text-4xl md:text-6xl font-extrabold leading-tight">
-              SASA —  
-              <span className="block text-green-200">Cashless School Payments</span>
+              Pesasa —
+              <span className="block text-green-200">
+                Cashless School Payments Made Simple
+              </span>
             </h1>
 
             <p className="text-lg md:text-xl text-green-100">
-              Safe, smart and instant spending for students.
-              Managed fully by parents through WhatsApp.
+              Parents control school spending via WhatsApp.
+              Students pay safely using QR smart cards.
             </p>
 
             <div className="flex flex-col sm:flex-row gap-4 mt-8 justify-center md:justify-start">
@@ -44,6 +48,27 @@ export default function Home() {
             alt="School Wallet"
             className="rounded-2xl shadow-2xl w-full max-w-xs sm:max-w-sm md:max-w-md mt-10 md:mt-0 animate-fadeIn"
           />
+        </div>
+      </section>
+
+      <section className="px-6 md:px-20 py-16 bg-white text-center">
+        <h3 className="text-2xl md:text-3xl font-bold mb-6">
+          Built for African Institutions
+        </h3>
+
+        <div className="flex flex-col md:flex-row justify-center gap-10 text-gray-600">
+          <div>
+            <p className="text-3xl font-bold text-green-600">100%</p>
+            <p>Cashless & Secure</p>
+          </div>
+          <div>
+            <p className="text-3xl font-bold text-green-600">Real-Time</p>
+            <p>Parent Notifications</p>
+          </div>
+          <div>
+            <p className="text-3xl font-bold text-green-600">Mobile Money</p>
+            <p>MTN & Airtel Support</p>
+          </div>
         </div>
       </section>
 
@@ -91,7 +116,7 @@ export default function Home() {
       {/* ================= FEATURES SECTION ================== */}
       <section id="features" className="px-6 md:px-20 py-20 bg-gray-50">
         <h2 className="text-3xl md:text-5xl font-bold text-center mb-16">
-          Why  SASA?
+          Why  pesasa?
         </h2>
 
         <div className="grid sm:grid-cols-2 md:grid-cols-3 gap-8 md:gap-12">
@@ -117,19 +142,37 @@ export default function Home() {
 
       {/* ================= HOW IT WORKS ================== */}
       <section id="how" className="px-6 md:px-20 py-20 bg-white">
-        <h2 className="text-3xl md:text-5xl font-bold text-center mb-16">How SASA Works</h2>
+        <h2 className="text-3xl md:text-5xl font-bold text-center mb-16">How Pesasa Works</h2>
 
         <div className="grid sm:grid-cols-2 md:grid-cols-4 gap-10">
           <div className="p-6 bg-gray-50 rounded-xl shadow text-center hover:shadow-lg transition">
-            <img src="https://img.icons8.com/fluency/96/user.png" className="mx-auto mb-4" />
+            <div className="relative w-full h-40 mb-4 rounded-lg overflow-hidden">
+              <Image
+                src="https://images.unsplash.com/photo-1607746882042-944635dfe10e"
+                alt="Parent using WhatsApp"
+                fill
+                className="object-cover"
+              />
+            </div>
             <h3 className="text-lg font-bold mb-2">1. Parent Registers</h3>
-            <p className="text-gray-600">Using the WhatsApp agent.</p>
+            <p className="text-gray-600">
+              Parents register instantly via WhatsApp and create their Pesasa wallet.
+            </p>
           </div>
-
+          {/* 2. Add Children */}
           <div className="p-6 bg-gray-50 rounded-xl shadow text-center hover:shadow-lg transition">
-            <img src="https://img.icons8.com/fluency/96/schoolboy-at-a-desk.png" className="mx-auto mb-4" />
+            <div className="relative w-full h-40 mb-4 rounded-lg overflow-hidden">
+              <Image
+                src="https://images.unsplash.com/photo-1588072432836-e10032774350"
+                alt="Parent and child"
+                fill
+                className="object-cover"
+              />
+            </div>
             <h3 className="text-lg font-bold mb-2">2. Add Children</h3>
-            <p className="text-gray-600">Parents add students & set spending limits.</p>
+            <p className="text-gray-600">
+              Add students to your wallet and set daily or weekly spending limits.
+            </p>
           </div>
 
           <div className="p-6 bg-gray-50 rounded-xl shadow text-center hover:shadow-lg transition">
@@ -147,9 +190,22 @@ export default function Home() {
       </section>
 
       {/* ================= FOOTER ================== */}
-      <footer className="bg-green-700 text-white py-10 text-center">
-        <h3 className="text-xl font-semibold">SASA — Smart School Payments</h3>
-        <p className="text-green-200 mt-2">© {new Date().getFullYear()} SASA Technologies.</p>
+      <footer className="bg-green-800 text-white py-12 text-center">
+        <div className="flex flex-col items-center gap-4">
+        
+          {/*      <img src="/pesasa-logo.png" className="w-12" />  */}
+     
+          <h3 className="text-xl font-semibold">
+            Pesasa — Smart School Payments
+          </h3>
+          <p className="text-green-200 max-w-md">
+            Digitizing school spending across Uganda.
+            Safe for students. Transparent for parents.
+          </p>
+          <p className="text-green-300 text-sm">
+            © {new Date().getFullYear()} Pesasa Technologies. All rights reserved.
+          </p>
+        </div>
       </footer>
 
     </main>
