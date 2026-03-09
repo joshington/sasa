@@ -15,10 +15,15 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Pesasa — Cashless School Payments",
-  description:
-    "Pesasa enables safe, smart and instant school spending managed by parents via WhatsApp.",
+    title: "Pesasa | Controlled Digital Spending",
+    description:
+      "Pesasa enables institutions, NGOs, families and companies to distribute programmable money that can only be spent for its intended purpose.",
+    icons: {
+      icon: "/pesa32.png",
+    }
 };
+
+
 
 export default function RootLayout({
   children,
