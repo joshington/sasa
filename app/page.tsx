@@ -1,5 +1,7 @@
 import Image from "next/image";
 
+import Link from "next/link";
+
 export default function Home() {
   return (
     <main className="min-h-screen flex flex-col bg-white text-gray-900">
@@ -27,18 +29,27 @@ export default function Home() {
             </p>
 
             <div className="flex flex-col sm:flex-row gap-4 mt-8 justify-center md:justify-start">
+              <Link
+                href="/auth/signin"
+                className="px-6 py-3 bg-white text-green-700 font-semibold rounded-lg shadow hover:bg-gray-100 transition text-center"
+              >
+                Get Started
+              </Link>
               <a
                 href="#how"
                 className="px-6 py-3 bg-white text-green-700 font-semibold rounded-lg shadow hover:bg-gray-100 transition text-center"
               >
                 How It Works
               </a>
-              <a
+              {/*
+                <a
                 href="#features"
                 className="px-6 py-3 border border-white font-semibold rounded-lg hover:bg-white hover:text-green-700 transition text-center"
               >
                 Join WaitList
               </a>
+              */}
+              
             </div>
           </div>
 
