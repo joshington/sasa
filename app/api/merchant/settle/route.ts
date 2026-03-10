@@ -4,7 +4,7 @@ import { NextRequest, NextResponse } from "next/server";
 import dbConnect from "../../../utils/dbConnect";
 import Merchant from "../../../models/Merchant";
 
-export default async function GET(req: NextRequest) {
+export  async function GET(req: NextRequest) {
   if (req.method !== "POST") return NextResponse.json({ error: "Method not allowed" }, { status: 405 });
   await dbConnect();
 

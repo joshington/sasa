@@ -6,7 +6,7 @@ import Dependant from "@/app/models/Dependant";
 import Parent from "@/app/models/Parent";
 import QRCode from "qrcode";
 
-export default async function GET(req: NextRequest) {
+export  async function GET(req: NextRequest) {
   await dbConnect();
 
   const dependantId = req.nextUrl.searchParams.get("dependantId") || "DEPENDANT_ID_HERE"; // Replace with session

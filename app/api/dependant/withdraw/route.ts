@@ -7,7 +7,7 @@ import Parent from "../../../models/Parent";
 import Transaction from "../../../models/Transaction";
 import { verifyPin } from "../../../utils/hashPin";
 
-export default async function GET(req: NextRequest) {
+export async function GET(req: NextRequest) {
   if (req.method !== "POST") return NextResponse.json({ error: "Method not allowed" }, { status: 405 });
 
   await dbConnect();

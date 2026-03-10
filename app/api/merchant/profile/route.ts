@@ -3,7 +3,7 @@ import { NextRequest, NextResponse } from "next/server";
 import dbConnect from "../../../utils/dbConnect";
 import Merchant from "../../../models/Merchant";
 
-export default async function GET(req: NextRequest) {
+export async function GET(req: NextRequest) {
   await dbConnect();
 
   const merchantId = req.nextUrl.searchParams.get("merchantId") || "MERCHANT_ID_HERE"; // Replace with session
