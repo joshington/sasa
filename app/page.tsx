@@ -29,7 +29,7 @@ export default function Home() {
 
             <p className="text-lg md:text-xl text-green-100">
               Pesasa enables institutions, families, companies and NGOs
-              to distribute funds with built-in spending control, ensuring money is used exactly as intended
+              to distribute funds with <strong>built-in spending control</strong> ,ensuring money is used exactly as intended
             </p>
 
             <p className="text-green-200 font-semibold">
