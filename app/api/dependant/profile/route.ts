@@ -1,25 +1,26 @@
 
 
-import type { NextApiRequest, NextApiResponse } from "next";
-import dbConnect from "../../../utils/dbConnect";
-import Dependant from "../../../models/Dependant";
-import Parent from "../../../models/Parent";
+import { NextRequest, NextResponse } from "next/server";
+import dbConnect from "@/app/utils/dbConnect";
+import Dependant from "@/app/models/Dependant";
+import Parent from "@/app/models/Parent";
 import QRCode from "qrcode";
 
-export default async function handler(req: NextApiRequest, res: NextApiResponse) {
+export default async function GET(req: NextRequest) {
   await dbConnect();
 
-  const dependantId = req.query.dependantId || "DEPENDANT_ID_HERE"; // Replace with session
+  const dependantId = req.nextUrl.searchParams.get("dependantId") || "DEPENDANT_ID_HERE"; // Replace with session
 
   try {
     const dependant = await Dependant.findById(dependantId);
-    if (!dependant) return res.status(404).json({ error: "Dependant not found" });
-
+    if (!dependant) {
+      return NextResponse.json({ error: "Dependant not found" }, { status: 404 });
+    }
     const parent = await Parent.findById(dependant.parentId);
 
     const qrDataURL = await QRCode.toDataURL(dependant.smartCardId);
 
-    res.status(200).json({
+    return NextResponse.json({
       name: dependant.name,
       institute: dependant.institute,
       parentName: parent?.username || "",
@@ -30,6 +31,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     });
   } catch (err) {
     console.error(err);
-    res.status(500).json({ error: "Internal server error" });
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }

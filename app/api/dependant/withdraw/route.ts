@@ -1,30 +1,29 @@
 
 
-import type { NextApiRequest, NextApiResponse } from "next";
+import { NextRequest, NextResponse } from "next/server";
 import dbConnect from "../../../utils/dbConnect";
 import Dependant from "../../../models/Dependant";
 import Parent from "../../../models/Parent";
 import Transaction from "../../../models/Transaction";
 import { verifyPin } from "../../../utils/hashPin";
 
-export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-  if (req.method !== "POST") return res.status(405).end("Method not allowed");
+export default async function GET(req: NextRequest) {
+  if (req.method !== "POST") return NextResponse.json({ error: "Method not allowed" }, { status: 405 });
 
   await dbConnect();
 
-  const { smartCardId, amount, pin, merchantId } = req.body;
+  const { smartCardId, amount, pin, merchantId } = await req.json();
 
   try {
     const dependant = await Dependant.findOne({ smartCardId });
-    if (!dependant) return res.status(404).json({ error: "Dependant not found" });
+    if (!dependant) return NextResponse.json({ error: "Dependant not found" }, { status: 404 });
 
     const isPinValid = await verifyPin(pin, dependant.pin);
-    if (!isPinValid) return res.status(401).json({ error: "Invalid PIN" });
+    if (!isPinValid) return NextResponse.json({ error: "Invalid PIN" }, { status: 401 });
 
     const dailyLimit = dependant.spendLimit.daily || Infinity;
-    if (amount > dependant.balance) return res.status(400).json({ error: "Insufficient balance" });
-    if (amount > dailyLimit) return res.status(400).json({ error: "Amount exceeds daily spend limit" });
-
+    if (amount > dependant.balance) return NextResponse.json({ error: "Insufficient balance" }, { status: 400 });
+    if (amount > dailyLimit) return NextResponse.json({ error: "Amount exceeds daily spend limit" }, { status: 400 });
     const fee = amount * 0.03;
 
     // Deduct from dependant & parent
@@ -48,9 +47,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       timestamp: new Date(),
     });
 
-    res.status(200).json({ message: "Withdraw successful", balance: dependant.balance });
+    return NextResponse.json({ message: "Withdraw successful", balance: dependant.balance });
   } catch (err) {
     console.error(err);
-    res.status(500).json({ error: "Internal server error" });
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }

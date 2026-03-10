@@ -1,18 +1,17 @@
 
-import type { NextApiRequest, NextApiResponse } from "next";
+import { NextRequest, NextResponse } from "next/server";
 import dbConnect from "../../../utils/dbConnect";
 import Merchant from "../../../models/Merchant";
 
-export default async function handler(req: NextApiRequest, res: NextApiResponse) {
+export default async function GET(req: NextRequest) {
   await dbConnect();
 
-  const merchantId = req.query.merchantId || "MERCHANT_ID_HERE"; // Replace with session
+  const merchantId = req.nextUrl.searchParams.get("merchantId") || "MERCHANT_ID_HERE"; // Replace with session
 
   try {
     const merchant = await Merchant.findById(merchantId);
-    if (!merchant) return res.status(404).json({ error: "Merchant not found" });
-
-    res.status(200).json({
+    if (!merchant) return NextResponse.json({ error: "Merchant not found" }, { status: 404 });
+    return NextResponse.json({
       username: merchant.username,
       email: merchant.email,
       phoneNo: merchant.phoneNo,
@@ -22,6 +21,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     });
   } catch (err) {
     console.error(err);
-    res.status(500).json({ error: "Internal server error" });
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }

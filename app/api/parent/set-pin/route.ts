@@ -1,25 +1,24 @@
 
-import type { NextApiRequest, NextApiResponse } from "next";
+import { NextRequest, NextResponse } from "next/server";
 import dbConnect from "../../../utils/dbConnect";
 import Parent from "../../../models/Parent";
 import { hashPin } from "../../../utils/hashPin";
 
-export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-  if (req.method !== "POST") return res.status(405).end("Method not allowed");
+export default async function GET(req: NextRequest) {
+  if (req.method !== "POST") return NextResponse.json({ error: "Method not allowed" }, { status: 405 });
   await dbConnect();
 
-  const { parentId, pin } = req.body;
-
+  const { parentId, pin } = await req.json();
   try {
     const parent = await Parent.findById(parentId);
-    if (!parent) return res.status(404).json({ error: "Parent not found" });
+    if (!parent) return NextResponse.json({ error: "Parent not found" }, { status: 404 });
 
     parent.pin = await hashPin(pin);
     await parent.save();
 
-    res.status(200).json({ message: "PIN set successfully" });
+    return NextResponse.json({ message: "PIN set successfully" });
   } catch (err) {
     console.error(err);
-    res.status(500).json({ error: "Internal server error" });
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }
