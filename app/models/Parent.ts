@@ -3,6 +3,7 @@
 import mongoose, { Schema, Document } from "mongoose";
 
 export interface ParentDoc extends Document {
+  googleId: string;
   username: string;
   email: string;
   phoneNo: string;
@@ -13,6 +14,7 @@ export interface ParentDoc extends Document {
 
 const ParentSchema = new Schema<ParentDoc>(
   {
+    googleId: { type: String, required: true, unique: true },
     username: { type: String, required: true },
     email: { type: String, required: true },
     phoneNo: { type: String, required: false },

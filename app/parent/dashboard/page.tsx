@@ -2,8 +2,10 @@
 
 "use client";
 
+import {useSession, signOut} from "next-auth/react";
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import SpendingChart from "@/app/components/SpendingChart";
 
 interface Dependant {
   _id: string;
@@ -23,25 +25,76 @@ export default function ParentDashboard() {
   const [dependants, setDependants] = useState<Dependant[]>([]);
   const [transactions, setTransactions] = useState<Transaction[]>([]);
 
+  const chartData = [
+    { day: "Mon", amount: 2000 },
+    { day: "Tue", amount: 3500 },
+    { day: "Wed", amount: 1000 },
+    { day: "Thu", amount: 4200 },
+    { day: "Fri", amount: 2800 },
+    { day: "Sat", amount: 500 },
+    { day: "Sun", amount: 0 },
+  ];
+
+
+
+
+  //want to get the parent sessions
+  const { data: session, status } = useSession();
+  if (status === "loading") return <p>Loading...</p>;
+  if(!session) {
+    window.location.href = "/";
+  }
+  //prevents direcct access to /parent/dashbaord without authenticating
+
   useEffect(() => {
     fetch("/api/parent/dashboard")
       .then((res) => res.json())
       .then((data) => {
-        setBalance(data.balance);
-        setDependants(data.dependants);
+        setBalance(data.balance || 0);
+        setDependants(data.dependants || []);
         setTransactions(data.transactions || []);
       });
   }, []);
 
   return (
     <div className="min-h-screen bg-gray-50 p-8">
-
       {/* HEADER */}
-      <div className="mb-10">
-        <h1 className="text-4xl font-bold text-gray-800">Parent Dashboard</h1>
-        <p className="text-gray-500">Control and monitor your children's spending</p>
+      <div className="mb-10 flex justify-between items-center">
+        <div>
+            <h1 className="text-4xl font-bold text-gray-800">
+              Parent Dashboard
+            </h1>
+            <p className="text-gray-500">
+              Control and monitor your children's spending
+            </p>
+        </div>
+         {/* profile */}
+        <div className="flex items-center gap-4">
+          <div className="flex items-center gap-2">
+            {session?.user?.image && (
+              <img
+                src={
+                  session?.user?.image || 
+                  "https://ui-avatars.com/api/?name=" + session?.user?.name
+                }
+                alt="Profile "
+                className="w-10 h-10 rounded-full"
+              />
+            )}
+            <span className="font-semibold">
+              {session?.user?.name}
+            </span>
+          </div>
+          {/* signout */}
+          <button
+            onClick={() => signOut({ callbackUrl: "/" })}
+            className="bg-red-500 text-white px-4 py-2 rounder-lg hover:bg-red-600"
+          >
+              Sign Out
+          </button>
+        </div>
       </div>
-
+     
       {/* WALLET + ACTIONS */}
       <div className="grid md:grid-cols-3 gap-6 mb-10">
 
@@ -49,7 +102,7 @@ export default function ParentDashboard() {
         <div className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white p-6 rounded-xl shadow-lg col-span-2">
           <p className="text-sm opacity-80">Total Wallet Balance</p>
           <h2 className="text-4xl font-bold mt-2">
-            UGX {balance.toLocaleString()}
+            UGX {(balance || 0).toLocaleString()}
           </h2>
 
           <div className="mt-6 flex gap-4">
@@ -91,9 +144,11 @@ export default function ParentDashboard() {
             </Link>
           </div>
         </div>
-
       </div>
-
+      {/* chart for 7 days spening */}
+      <div className="mb-10">
+          <SpendingChart data={chartData} />
+      </div>
       {/* DEPENDANTS */}
       <div className="bg-white rounded-xl shadow p-6 mb-10">
 
@@ -107,7 +162,7 @@ export default function ParentDashboard() {
           </Link>
         </div>
 
-        {dependants.length === 0 ? (
+        {!dependants || dependants.length === 0 ? (
           <p className="text-gray-500">
             No dependants yet. Add a child to start managing their spending.
           </p>
@@ -125,7 +180,7 @@ export default function ParentDashboard() {
                 </p>
 
                 <p className="text-xl font-bold text-blue-600">
-                  UGX {dep.balance.toLocaleString()}
+                  UGX {(dep.balance || 0).toLocaleString()}
                 </p>
 
                 <Link href={`/parent/dependant/${dep._id}`}>
@@ -165,7 +220,7 @@ export default function ParentDashboard() {
                 </div>
 
                 <p className="text-red-600 font-semibold">
-                  - UGX {tx.amount.toLocaleString()}
+                  - UGX {(tx.amount || 0).toLocaleString()}
                 </p>
               </div>
             ))}

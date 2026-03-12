@@ -38,7 +38,7 @@ export default function Home() {
 
             <div className="flex flex-col sm:flex-row gap-4 mt-6">
               <Link
-                href="/auth/signin"
+                href="/get-started"
                 className="px-6 py-3 bg-white text-green-700 font-semibold rounded-lg shadow hover:bg-gray-100 transition text-center"
               >
                 Get Started
