@@ -40,13 +40,19 @@ export default function ParentDashboard() {
 
   //want to get the parent sessions
   const { data: session, status } = useSession();
-  if (status === "loading") return <p>Loading...</p>;
-  if(!session) {
-    window.location.href = "/";
-  }
+  
   //prevents direcct access to /parent/dashbaord without authenticating
 
   useEffect(() => {
+    if (status === "loading") return; //wait for session to load
+    if(!session) {
+      window.location.href = "/"; //redirect if no session
+    }
+  }, [status, session]);
+
+  //fetch dashboard data fter session is ready
+  useEffect(() => {
+    if (!session) return; //wait until session exists
     fetch("/api/parent/dashboard")
       .then((res) => res.json())
       .then((data) => {
@@ -54,8 +60,10 @@ export default function ParentDashboard() {
         setDependants(data.dependants || []);
         setTransactions(data.transactions || []);
       });
-  }, []);
+  }, [session]);
 
+  if (status === "loading") return <p>Loading...</p>
+  if (!session) return null; //avoid rendering anything before redirect
   return (
     <div className="min-h-screen bg-gray-50 p-8">
       {/* HEADER */}
@@ -88,7 +96,7 @@ export default function ParentDashboard() {
           {/* signout */}
           <button
             onClick={() => signOut({ callbackUrl: "/" })}
-            className="bg-red-500 text-white px-4 py-2 rounder-lg hover:bg-red-600"
+            className="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600"
           >
               Sign Out
           </button>
@@ -154,6 +162,9 @@ export default function ParentDashboard() {
 
         <div className="flex justify-between items-center mb-6">
           <h2 className="text-2xl font-semibold">Your Dependants</h2>
+          <span className="bg-gray-100 text-gray-700 text-sm px-3 py-1 rounded-full">
+            {dependants.length}
+          </span>
 
           <Link href="/parent/add-dependant">
             <button className="bg-green-600 text-white px-4 py-2 rounded-lg">

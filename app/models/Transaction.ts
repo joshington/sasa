@@ -18,12 +18,15 @@ const TransactionSchema = new Schema<TransactionDoc>({
   status: { type: String, enum: ["pending", "completed", "failed"], required: true},
   type: { type: String, enum: ["withdraw", "deposit"], required: true },
   amount: { type: Number, required: true },
-  parentId: { type: Schema.Types.ObjectId, ref: "Parent" },
-  dependantId: { type: Schema.Types.ObjectId, ref: "Dependant" },
+  parentId: { type: Schema.Types.ObjectId, ref: "Parent", required: true, index: true },
+  dependantId: { type: Schema.Types.ObjectId, ref: "Dependant", index: true },
   merchantId: { type: Schema.Types.ObjectId, ref: "Merchant" },
   fee: { type: Number, default: 0 },
   timestamp: { type: Date, default: Date.now },
 });
+
+//to make querying faster, am adding a compound index
+TransactionSchema.index({ parentId: 1, createdAt: -1 });
 
 export default mongoose.models.Transaction || mongoose.model("Transaction", TransactionSchema);
 

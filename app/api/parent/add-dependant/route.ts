@@ -1,44 +1,78 @@
 
 
-import { NextRequest, NextResponse } from "next/server";
-import dbConnect from "../../../utils/dbConnect";
-import Parent from "../../../models/Parent";
-import Dependant from "../../../models/Dependant";
-import { hashPin } from "../../../utils/hashPin";
-import QRCode from "qrcode";
 
-export async function GET(req: NextRequest) {
-  if (req.method !== "POST") return NextResponse.json({ error: "Method not allowed" }, { status: 405 });
+import dbConnect from "@/app/utils/dbConnect";
+import Dependant from "@/app/models/Dependant";
+import Parent from "@/app/models/Parent";
+import bcrypt from "bcryptjs";
+import { NextResponse } from "next/server";
+import { getServerSession } from "next-auth/next";
+import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 
-  await dbConnect();
 
-  const { parentId, name, pin, institute, spendLimit } = await req.json();
 
+//generate smart card Id
+function generateSmartCardId(){
+    return "PSC-" + Math.random().toString(36).substring(2,10).toUpperCase();
+}
+
+export async function POST(req: Request) {
   try {
-    const parent = await Parent.findById(parentId);
-    if (!parent) return NextResponse.json({ error: "Parent not found" }, { status: 404 });
-    const hashedPin = await hashPin(pin);
+    await dbConnect();
 
-    // Generate QR code ID (simple random for MVP)
-    const smartCardId = `${parentId}-${Date.now()}`;
-    const qrDataURL = await QRCode.toDataURL(smartCardId);
+    const session = await getServerSession(authOptions);
 
-    const dependant = await Dependant.create({
-      parentId,
+    if (!session?.user?.email) {
+      return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
+    }
+
+    const parent = await Parent.findOne({ email: session.user.email });
+    if (!parent) {
+      return NextResponse.json({ message: "Parent not found" }, { status: 404 });
+    }
+
+    const body = await req.json();
+    const { name, pin, institute, dailySpendLimit } = body;
+
+    // Hash the PIN before saving
+    const hashedPin = await bcrypt.hash(pin, 10);
+
+    const smartCardId = generateSmartCardId();
+
+    const dependant = new Dependant({
+      parentId: parent._id,
       name,
       pin: hashedPin,
       smartCardId,
       institute,
-      spendLimit,
+      dailySpendLimit,
       balance: 0,
     });
 
-    parent.dependants.push(dependant._id);
-    await parent.save();
+    await dependant.save();
 
-    return NextResponse.json({ dependant, qrDataURL });
-  } catch (err) {
+    // Add dependant to parent's dependants array
+    //parent.dependants.push(dependant._id);
+    //await parent.save();
+    await Parent.findByIdAndUpdate(parent._id, {
+        $push: {dependants: dependant._id}
+    });
+
+    //prevent duplicate smart cards, since every child should have one unique
+    //smart card
+    const existingCard = await Dependant.findOne({smartCardId});
+    if(existingCard) {
+        return NextResponse.json(
+            {message: "Smart card already registered"},
+            {status: 400}
+        );
+    }
+    //above prevents 2 children using the same card
+
+    return NextResponse.json({ message: "Dependant added successfully" });
+  } catch (err: any) {
     console.error(err);
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+    return NextResponse.json({ message: err.message || "Error adding dependant" }, { status: 500 });
   }
 }
+

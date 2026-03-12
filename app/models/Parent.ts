@@ -14,12 +14,12 @@ export interface ParentDoc extends Document {
 
 const ParentSchema = new Schema<ParentDoc>(
   {
-    googleId: { type: String, required: true, unique: true },
+    googleId: { type: String, required: true, unique: true, index: true },
     username: { type: String, required: true },
-    email: { type: String, required: true },
+    email: { type: String, required: true, unique:true, index:true },
     phoneNo: { type: String, required: false },
     pin: { type: String, required: false },
-    balance: { type: Number, default: 0 },
+
     dependants: [{ type: Schema.Types.ObjectId, ref: "Dependant" }],
   },
   {timestamps: true}

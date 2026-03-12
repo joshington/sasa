@@ -4,6 +4,7 @@ import NextAuth, {NextAuthOptions} from "next-auth";
 import GoogleProvider from "next-auth/providers/google";
 import dbConnect from "@/app/utils/dbConnect";
 import Parent from "@/app/models/Parent";
+import Wallet from "@/app/models/Wallet";
 
 
 
@@ -50,6 +51,12 @@ export const authOptions: NextAuthOptions = {
                     email: user.email,
                 });
                 await parent.save();
+                //SINCE we are using a ledger
+                await Wallet.create({
+                    parentId: parent._id,
+                    balance: 0
+                })
+                
             }
             return true;
         },

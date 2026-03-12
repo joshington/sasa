@@ -8,21 +8,17 @@ export interface DependantDoc extends Document {
   pin: string; // hashed
   smartCardId: {type: String, required:true, unique: true};
   institute: string;
-  spendLimit: {
-    daily: {type: Number, default: 0};
-    weekly: {type: Number, default: 0};
-    monthly:{type: Number, default: 0};
-  };
+  dailySpendLimit: number;
   balance: number;
 }
 
 const DependantSchema = new Schema<DependantDoc>({
-  parentId: { type: Schema.Types.ObjectId, ref: "Parent", required: true },
+  parentId: { type: Schema.Types.ObjectId, ref: "Parent", required: true, index: true },
   name: { type: String, required: true },
   pin: { type: String, required: true },
-  smartCardId: { type: String, required: true },
+  smartCardId: { type: String, required: true, index: true },
   institute: { type: String, required: true },
-  spendLimit: { type: Object, default: {} },
+  dailySpendLimit: { type: Number, default: 0 },
   balance: { type: Number, default: 0 },
 });
 
