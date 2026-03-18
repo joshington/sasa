@@ -103,6 +103,7 @@ function SignInForm() {
           <Link href="/merchant/signup" style={styles.link}>
             Create one
           </Link>
+          <Link href="/merchant/forgot-password">Forgot your password?</Link>
         </p>
       </div>
     </main>
