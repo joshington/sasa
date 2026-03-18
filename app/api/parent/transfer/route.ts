@@ -1,5 +1,5 @@
 
-
+import mongoose from "mongoose";
 
 import { NextResponse } from "next/server";
 import dbConnect from "@/app/utils/dbConnect";
@@ -11,8 +11,10 @@ import Transaction from "@/app/models/Transaction";
 
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
+import {generateReference} from "@/app/utils/generateReference";
 
 export async function POST(req: Request) {
+    const sessionDb = await mongoose.startSession();
     try {
         await dbConnect();
         const session = await getServerSession(authOptions);
@@ -76,28 +78,45 @@ export async function POST(req: Request) {
                 {status: 400}
             );
         }
+
+        sessionDb.startTransaction();
         //update balances
         wallet.balance -= transferAmount
         child.balance += transferAmount;
 
-        await wallet.save();
-        await child.save();
+        await wallet.save({ session: sessionDb });
+        await child.save({ session: sessionDb });
 
         //record transaction
-        await Transaction.create({
-            parentId: parent._id,
-            dependantId: child._id,
-            amount: transferAmount,
-            type: "transfer",
-            merchant: "Parent Transfer"
-        });
+        
+        await Transaction.create(
+            [
+                {
+                    reference: generateReference(), //calling the func
+                    parentId: parent._id,
+                    dependantId: child._id,
+                    amount: transferAmount,
+                    type: "deposit",
+                    status: "completed",
+                    merchant: "Parent Transfer",
+                    fee:0,
+                }
+            ],
+            {session: sessionDb}
+        );
+        await sessionDb.commitTransaction();
+        sessionDb.endSession();
+
         return NextResponse.json({
             message: "Transfer successful"
         });
     } catch(error) {
+        await sessionDb.abortTransaction();
+        sessionDb.endSession();
+
         console.error(error);
         return NextResponse.json(
-            {error: "Server error"},
+            {error: "Transfer failed"},
             {status: 500}
         );
     }

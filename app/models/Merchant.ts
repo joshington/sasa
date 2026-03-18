@@ -1,5 +1,6 @@
 
 
+
 import mongoose, { Schema, Document } from "mongoose";
 
 export interface MerchantDoc extends Document {
@@ -7,14 +8,18 @@ export interface MerchantDoc extends Document {
   email: string;
   phoneNo: string;
   institute: string;
-  pin: string; // hashed
+  password: string; // hashed
+  pin?: string; // hashed, set later
 
   commissionBalance: number;
 
   settlementFrequency: "daily" | "weekly" | "monthly";
   lastSettlementDate?: Date;
 
-  status: "active" | "suspended";
+  status: "pending" | "active" | "suspended";
+
+  activationToken?: string;
+  activationTokenExpiry?: Date;
 
   createdAt: Date;
   updatedAt: Date;
@@ -24,7 +29,6 @@ const MerchantSchema = new Schema<MerchantDoc>(
   {
     username: {
       type: String,
-      required: true,
       trim: true,
     },
 
@@ -47,9 +51,13 @@ const MerchantSchema = new Schema<MerchantDoc>(
       required: true,
     },
 
-    pin: {
+    password: {
       type: String,
       required: true,
+    },
+
+    pin: {
+      type: String,
     },
 
     commissionBalance: {
@@ -69,8 +77,16 @@ const MerchantSchema = new Schema<MerchantDoc>(
 
     status: {
       type: String,
-      enum: ["active", "suspended"],
-      default: "active",
+      enum: ["pending", "active", "suspended"],
+      default: "pending",
+    },
+
+    activationToken: {
+      type: String,
+    },
+
+    activationTokenExpiry: {
+      type: Date,
     },
   },
   {

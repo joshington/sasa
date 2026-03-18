@@ -2,9 +2,10 @@
 
 "use client";
 
-import {useSession, signOut} from "next-auth/react";
+import { useSession, signOut } from "next-auth/react";
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import SpendingChart from "@/app/components/SpendingChart";
 
 interface Dependant {
@@ -18,12 +19,17 @@ interface Transaction {
   dependantName: string;
   merchant: string;
   amount: number;
+  type: string;
+  timestamp: string;
 }
 
 export default function ParentDashboard() {
-  const [balance, setBalance] = useState(0);
-  const [dependants, setDependants] = useState<Dependant[]>([]);
+  const [balance,      setBalance]      = useState(0);
+  const [dependants,   setDependants]   = useState<Dependant[]>([]);
   const [transactions, setTransactions] = useState<Transaction[]>([]);
+  const [hasPinSet,    setHasPinSet]    = useState(true);
+  const [menuOpen,     setMenuOpen]     = useState(false);
+  const [loading,      setLoading]      = useState(true);
 
   const chartData = [
     { day: "Mon", amount: 2000 },
@@ -31,214 +37,464 @@ export default function ParentDashboard() {
     { day: "Wed", amount: 1000 },
     { day: "Thu", amount: 4200 },
     { day: "Fri", amount: 2800 },
-    { day: "Sat", amount: 500 },
-    { day: "Sun", amount: 0 },
+    { day: "Sat", amount: 500  },
+    { day: "Sun", amount: 0    },
   ];
 
-
-
-
-  //want to get the parent sessions
   const { data: session, status } = useSession();
-  
-  //prevents direcct access to /parent/dashbaord without authenticating
 
   useEffect(() => {
-    if (status === "loading") return; //wait for session to load
-    if(!session) {
-      window.location.href = "/"; //redirect if no session
-    }
+    if (status === "loading") return;
+    if (!session) window.location.href = "/";
   }, [status, session]);
 
-  //fetch dashboard data fter session is ready
   useEffect(() => {
-    if (!session) return; //wait until session exists
+    if (!session) return;
     fetch("/api/parent/dashboard")
       .then((res) => res.json())
       .then((data) => {
         setBalance(data.balance || 0);
         setDependants(data.dependants || []);
         setTransactions(data.transactions || []);
+        setHasPinSet(data.hasPinSet);
+        setLoading(false);
       });
   }, [session]);
 
-  if (status === "loading") return <p>Loading...</p>
-  if (!session) return null; //avoid rendering anything before redirect
-  return (
-    <div className="min-h-screen bg-gray-50 p-8">
-      {/* HEADER */}
-      <div className="mb-10 flex justify-between items-center">
-        <div>
-            <h1 className="text-4xl font-bold text-gray-800">
-              Parent Dashboard
-            </h1>
-            <p className="text-gray-500">
-              Control and monitor your children's spending
-            </p>
+  if (status === "loading" || loading) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="flex flex-col items-center gap-3">
+          <div className="w-10 h-10 border-4 border-green-500 border-t-transparent
+                          rounded-full animate-spin" />
+          <p className="text-gray-500 text-sm">Loading dashboard…</p>
         </div>
-         {/* profile */}
-        <div className="flex items-center gap-4">
+      </div>
+    );
+  }
+  if (!session) return null;
+
+  const firstName = session.user?.name?.split(" ")[0] || "there";
+
+  return (
+    <div className="min-h-screen bg-gray-50">
+
+      {/* ── TOP NAV ─────────────────────────────────────────────────────────── */}
+      <nav className="sticky top-0 z-40 bg-white border-b border-gray-100 shadow-sm">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
+
+          {/* Logo */}
           <div className="flex items-center gap-2">
-            {session?.user?.image && (
-              <img
-                src={
-                  session?.user?.image || 
-                  "https://ui-avatars.com/api/?name=" + session?.user?.name
-                }
-                alt="Profile "
-                className="w-10 h-10 rounded-full"
-              />
-            )}
-            <span className="font-semibold">
-              {session?.user?.name}
-            </span>
+            <Image
+              src="/pesasa-logo.png"
+              alt="Pesasa Logo"
+              width={36}
+              height={36}
+              priority
+            />
+            <span className="font-bold text-gray-900 text-lg tracking-tight">Pesasa</span>
           </div>
-          {/* signout */}
+
+          {/* Desktop nav links */}
+          <div className="hidden md:flex items-center gap-6 text-sm font-medium text-gray-500">
+            <Link href="/parent/dashboard"
+              className="text-green-600 border-b-2 border-green-600 pb-0.5">
+              Dashboard
+            </Link>
+            <Link href="/parent/transactions"
+              className="hover:text-gray-900 transition-colors">
+              Transactions
+            </Link>
+            <Link href="/parent/add-dependant"
+              className="hover:text-gray-900 transition-colors">
+              Add Child
+            </Link>
+          </div>
+
+          {/* Desktop user */}
+          <div className="hidden md:flex items-center gap-3">
+            <img
+              src={
+                session.user?.image ||
+                `https://ui-avatars.com/api/?name=${encodeURIComponent(session.user?.name || "P")}&background=16a34a&color=fff`
+              }
+              alt="Profile"
+              className="w-9 h-9 rounded-full border-2 border-green-500 object-cover"
+            />
+            <span className="text-sm font-medium text-gray-700">{session.user?.name}</span>
+            <button
+              onClick={() => signOut({ callbackUrl: "/" })}
+              className="text-sm text-gray-500 hover:text-red-500 transition-colors ml-1"
+            >
+              Sign out
+            </button>
+          </div>
+
+          {/* Mobile hamburger */}
           <button
-            onClick={() => signOut({ callbackUrl: "/" })}
-            className="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600"
+            className="md:hidden p-2 rounded-lg hover:bg-gray-100 transition-colors"
+            onClick={() => setMenuOpen(!menuOpen)}
           >
-              Sign Out
+            <div className="w-5 flex flex-col gap-1">
+              <span className={`h-0.5 bg-gray-700 rounded transition-all duration-200
+                ${menuOpen ? "rotate-45 translate-y-1.5" : ""}`} />
+              <span className={`h-0.5 bg-gray-700 rounded transition-all duration-200
+                ${menuOpen ? "opacity-0" : ""}`} />
+              <span className={`h-0.5 bg-gray-700 rounded transition-all duration-200
+                ${menuOpen ? "-rotate-45 -translate-y-1.5" : ""}`} />
+            </div>
           </button>
         </div>
-      </div>
-     
-      {/* WALLET + ACTIONS */}
-      <div className="grid md:grid-cols-3 gap-6 mb-10">
 
-        {/* Wallet Card */}
-        <div className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white p-6 rounded-xl shadow-lg col-span-2">
-          <p className="text-sm opacity-80">Total Wallet Balance</p>
-          <h2 className="text-4xl font-bold mt-2">
-            UGX {(balance || 0).toLocaleString()}
-          </h2>
-
-          <div className="mt-6 flex gap-4">
-            <Link href="/parent/deposit">
-              <button className="bg-white text-blue-600 px-4 py-2 rounded-lg font-semibold">
-                Deposit
-              </button>
-            </Link>
-
-            <Link href="/parent/transfer">
-              <button className="border border-white px-4 py-2 rounded-lg">
-                Transfer to Child
-              </button>
-            </Link>
-          </div>
-        </div>
-
-        {/* Quick Actions */}
-        <div className="bg-white p-6 rounded-xl shadow">
-          <h3 className="font-semibold mb-4 text-gray-700">Quick Actions</h3>
-
-          <div className="flex flex-col gap-3">
-            <Link href="/parent/add-dependant">
-              <button className="bg-green-600 text-white py-2 rounded-lg w-full">
-                Add Child
-              </button>
-            </Link>
-
-            <Link href="/parent/create-pin">
-              <button className="bg-gray-100 py-2 rounded-lg w-full">
-                Change PIN
-              </button>
-            </Link>
-
-            <Link href="/parent/transactions">
-              <button className="bg-gray-100 py-2 rounded-lg w-full">
-                View Transactions
-              </button>
-            </Link>
-          </div>
-        </div>
-      </div>
-      {/* chart for 7 days spening */}
-      <div className="mb-10">
-          <SpendingChart data={chartData} />
-      </div>
-      {/* DEPENDANTS */}
-      <div className="bg-white rounded-xl shadow p-6 mb-10">
-
-        <div className="flex justify-between items-center mb-6">
-          <h2 className="text-2xl font-semibold">Your Dependants</h2>
-          <span className="bg-gray-100 text-gray-700 text-sm px-3 py-1 rounded-full">
-            {dependants.length}
-          </span>
-
-          <Link href="/parent/add-dependant">
-            <button className="bg-green-600 text-white px-4 py-2 rounded-lg">
-              + Add Dependant
+        {/* Mobile menu dropdown */}
+        {menuOpen && (
+          <div className="md:hidden border-t border-gray-100 bg-white px-4 py-3 space-y-1">
+            <div className="flex items-center gap-3 pb-3 mb-2 border-b border-gray-100">
+              <img
+                src={
+                  session.user?.image ||
+                  `https://ui-avatars.com/api/?name=${encodeURIComponent(session.user?.name || "P")}&background=16a34a&color=fff`
+                }
+                alt="Profile"
+                className="w-9 h-9 rounded-full border-2 border-green-500 object-cover"
+              />
+              <div>
+                <p className="text-sm font-semibold text-gray-900">{session.user?.name}</p>
+                <p className="text-xs text-gray-400">{session.user?.email}</p>
+              </div>
+            </div>
+            {[
+              { href: "/parent/dashboard",     label: "Dashboard"     },
+              { href: "/parent/transactions",  label: "Transactions"  },
+              { href: "/parent/add-dependant", label: "Add Child"     },
+              { href: "/parent/set-pin",       label: "Set / Change PIN" },
+            ].map((item) => (
+              <Link key={item.href} href={item.href}
+                onClick={() => setMenuOpen(false)}
+                className="block px-3 py-2 rounded-lg text-sm text-gray-700
+                           hover:bg-gray-50 transition-colors">
+                {item.label}
+              </Link>
+            ))}
+            <button
+              onClick={() => signOut({ callbackUrl: "/" })}
+              className="w-full text-left px-3 py-2 rounded-lg text-sm text-red-500
+                         hover:bg-red-50 transition-colors mt-1"
+            >
+              Sign out
             </button>
-          </Link>
+          </div>
+        )}
+      </nav>
+
+      {/* ── PAGE BODY ──────────────────────────────────────────────────────── */}
+      <main className="max-w-6xl mx-auto px-4 sm:px-6 py-6 space-y-6">
+
+        {/* Greeting */}
+        <div>
+          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">
+            Good day, {firstName} 👋
+          </h1>
+          <p className="text-gray-500 text-sm mt-1">
+            Here's an overview of your family's spending
+          </p>
         </div>
 
-        {!dependants || dependants.length === 0 ? (
-          <p className="text-gray-500">
-            No dependants yet. Add a child to start managing their spending.
-          </p>
-        ) : (
-          <div className="grid md:grid-cols-3 gap-4">
-            {dependants.map((dep) => (
-              <div
-                key={dep._id}
-                className="border rounded-lg p-4 hover:shadow-md transition"
-              >
-                <h3 className="font-semibold text-lg">{dep.name}</h3>
+        {/* PIN warning banner */}
+        {!hasPinSet && (
+          <div className="bg-amber-50 border border-amber-200 rounded-xl
+                          px-4 py-3 flex flex-col sm:flex-row sm:items-center
+                          justify-between gap-3">
+            <div className="flex items-start gap-2">
+              <span className="text-amber-500 mt-0.5 shrink-0">⚠️</span>
+              <p className="text-amber-800 text-sm font-medium">
+                Set your transaction PIN to enable transfers and payments
+              </p>
+            </div>
+            <Link href="/parent/set-pin" className="shrink-0">
+              <button className="w-full sm:w-auto bg-amber-400 hover:bg-amber-500
+                                 text-amber-900 text-sm font-semibold px-4 py-2
+                                 rounded-lg transition-colors">
+                Set PIN now
+              </button>
+            </Link>
+          </div>
+        )}
 
-                <p className="text-gray-500 text-sm mt-1">
-                  Balance
-                </p>
+        {/* ── BALANCE + QUICK ACTIONS ──────────────────────────────────────── */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
 
-                <p className="text-xl font-bold text-blue-600">
-                  UGX {(dep.balance || 0).toLocaleString()}
-                </p>
+          {/* Wallet card */}
+          <div className="md:col-span-2 bg-gradient-to-br from-green-500 via-green-600
+                          to-emerald-700 text-white rounded-2xl p-6 shadow-lg
+                          shadow-green-200 relative overflow-hidden">
+            {/* Decorative circle */}
+            <div className="absolute -top-8 -right-8 w-40 h-40 bg-white/10
+                            rounded-full pointer-events-none" />
+            <div className="absolute -bottom-10 -right-4 w-32 h-32 bg-white/5
+                            rounded-full pointer-events-none" />
 
-                <Link href={`/parent/dependant/${dep._id}`}>
-                  <button className="mt-3 text-blue-600 hover:underline">
-                    Manage
+            <p className="text-sm text-green-100 font-medium">Total Wallet Balance</p>
+            <h2 className="text-3xl sm:text-4xl font-bold mt-1 tracking-tight">
+              UGX {(balance || 0).toLocaleString()}
+            </h2>
+            <p className="text-green-200 text-xs mt-1">
+              Available for transfers
+            </p>
+
+            <div className="mt-6 flex flex-wrap gap-3">
+              <Link href="/parent/deposit">
+                <button className="bg-white text-green-700 px-5 py-2.5 rounded-xl
+                                   font-semibold text-sm hover:shadow-md
+                                   transition-all duration-200 hover:scale-105">
+                  + Deposit
+                </button>
+              </Link>
+              <Link href="/parent/transfer">
+                <button
+                  disabled={!hasPinSet}
+                  className="border-2 border-white/70 text-white px-5 py-2.5 rounded-xl
+                             font-semibold text-sm hover:bg-white hover:text-green-700
+                             transition-all duration-200 hover:scale-105
+                             disabled:opacity-40 disabled:cursor-not-allowed
+                             disabled:hover:bg-transparent disabled:hover:text-white
+                             disabled:hover:scale-100"
+                >
+                  Transfer to Child
+                </button>
+              </Link>
+            </div>
+          </div>
+
+          {/* Quick actions */}
+          <div className="bg-white rounded-2xl p-5 shadow-sm border border-gray-100">
+            <h3 className="text-sm font-semibold text-gray-500 uppercase
+                           tracking-wide mb-4">
+              Quick Actions
+            </h3>
+            <div className="space-y-2">
+              {[
+                { href: "/parent/add-dependant", label: "＋  Add Child",       primary: true  },
+                { href: "/parent/change-pin", label: "🔒  Change PIN", primary: false },
+                { href: "/parent/transactions",   label: "📋  All Transactions",primary: false },
+              ].map((action) => (
+                <Link key={action.href} href={action.href}>
+                  <button className={`w-full text-left px-4 py-2.5 rounded-xl
+                    text-sm font-medium transition-all duration-200
+                    ${action.primary
+                      ? "bg-green-600 text-white hover:bg-green-700"
+                      : "bg-gray-50 text-gray-700 hover:bg-gray-100"
+                    }`}>
+                    {action.label}
                   </button>
                 </Link>
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
-        )}
+        </div>
 
-      </div>
+        {/* ── STATS ROW ────────────────────────────────────────────────────── */}
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+          {[
+            { label: "Children",      value: dependants.length,  suffix: ""   },
+            { label: "Transactions",  value: transactions.length, suffix: ""  },
+            {
+              label: "Total spent",
+              value: `UGX ${transactions
+                .filter(t => t.type === "withdraw")
+                .reduce((s, t) => s + t.amount, 0)
+                .toLocaleString()}`,
+              suffix: ""
+            },
+            {
+              label: "Avg per child",
+              value: dependants.length
+                ? `UGX ${Math.round(
+                    dependants.reduce((s, d) => s + d.balance, 0) / dependants.length
+                  ).toLocaleString()}`
+                : "—",
+              suffix: ""
+            },
+          ].map((stat) => (
+            <div key={stat.label}
+              className="bg-white rounded-xl p-4 border border-gray-100 shadow-sm">
+              <p className="text-xs text-gray-400 font-medium uppercase tracking-wide">
+                {stat.label}
+              </p>
+              <p className="text-lg sm:text-xl font-bold text-gray-900 mt-1">
+                {stat.value}
+              </p>
+            </div>
+          ))}
+        </div>
 
-      {/* RECENT TRANSACTIONS */}
-      <div className="bg-white rounded-xl shadow p-6">
+        {/* ── SPENDING CHART ───────────────────────────────────────────────── */}
+        <div className="bg-white rounded-2xl p-5 sm:p-6 border border-gray-100 shadow-sm">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="font-semibold text-gray-800">Spending — last 7 days</h3>
+            <span className="text-xs text-gray-400 bg-gray-50 px-2 py-1 rounded-lg">
+              Weekly view
+            </span>
+          </div>
+          <SpendingChart data={chartData} />
+        </div>
 
-        <h2 className="text-2xl font-semibold mb-6">Recent Transactions</h2>
+        {/* ── DEPENDANTS ───────────────────────────────────────────────────── */}
+        <div className="bg-white rounded-2xl p-5 sm:p-6 border border-gray-100 shadow-sm">
+          <div className="flex items-center justify-between mb-5">
+            <div>
+              <h2 className="text-lg font-bold text-gray-900">
+                Children
+                <span className="ml-2 text-sm font-medium text-gray-400 bg-gray-100
+                                 px-2 py-0.5 rounded-full">
+                  {dependants.length}
+                </span>
+              </h2>
+              <p className="text-xs text-gray-400 mt-0.5">
+                Manage each child's wallet and limits
+              </p>
+            </div>
+            <Link href="/parent/add-dependant">
+              <button className="bg-green-600 text-white px-4 py-2 rounded-xl
+                                 text-sm font-semibold hover:bg-green-700
+                                 transition-colors hidden sm:block">
+                + Add Child
+              </button>
+            </Link>
+          </div>
 
-        {transactions.length === 0 ? (
-          <p className="text-gray-500">No transactions yet.</p>
-        ) : (
-          <div className="space-y-3">
-            {transactions.map((tx) => (
-              <div
-                key={tx._id}
-                className="flex justify-between border-b pb-2"
-              >
-                <div>
-                  <p className="font-medium">
-                    {tx.dependantName}
-                  </p>
+          {dependants.length === 0 ? (
+            <div className="text-center py-10 border-2 border-dashed border-gray-200
+                            rounded-xl">
+              <p className="text-3xl mb-2">👶</p>
+              <p className="text-gray-500 text-sm">No children added yet.</p>
+              <Link href="/parent/add-dependant">
+                <button className="mt-3 text-sm text-green-600 font-semibold
+                                   hover:underline">
+                  Add your first child →
+                </button>
+              </Link>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              {dependants.map((dep) => (
+                <div key={dep._id}
+                  className="border border-gray-100 rounded-xl p-4 hover:shadow-md
+                             hover:border-green-200 transition-all duration-200
+                             group">
+                  {/* Avatar + name */}
+                  <div className="flex items-center gap-3 mb-3">
+                    <div className="w-10 h-10 rounded-full bg-green-100 flex items-center
+                                    justify-center text-green-700 font-bold text-sm shrink-0">
+                      {dep.name.charAt(0).toUpperCase()}
+                    </div>
+                    <div>
+                      <h3 className="font-semibold text-gray-900 text-sm leading-tight">
+                        {dep.name}
+                      </h3>
+                      <p className="text-xs text-gray-400">Active</p>
+                    </div>
+                  </div>
 
-                  <p className="text-sm text-gray-500">
-                    {tx.merchant}
+                  {/* Balance */}
+                  <div className="bg-gray-50 rounded-lg px-3 py-2 mb-3">
+                    <p className="text-xs text-gray-400">Balance</p>
+                    <p className="text-lg font-bold text-green-600">
+                      UGX {(dep.balance || 0).toLocaleString()}
+                    </p>
+                  </div>
+
+                  <Link href={`/parent/dependant/${dep._id}`}>
+                    <button className="w-full text-sm text-green-600 font-semibold
+                                       py-1.5 rounded-lg border border-green-200
+                                       hover:bg-green-50 transition-colors">
+                      Manage →
+                    </button>
+                  </Link>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+
+        {/* ── RECENT TRANSACTIONS ──────────────────────────────────────────── */}
+        <div className="bg-white rounded-2xl p-5 sm:p-6 border border-gray-100 shadow-sm">
+          <div className="flex items-center justify-between mb-5">
+            <div>
+              <h2 className="text-lg font-bold text-gray-900">Recent Transactions</h2>
+              <p className="text-xs text-gray-400 mt-0.5">Last 5 activities</p>
+            </div>
+            <Link href="/parent/transactions">
+              <button className="text-sm text-green-600 font-semibold hover:underline">
+                View all
+              </button>
+            </Link>
+          </div>
+
+          {transactions.length === 0 ? (
+            <div className="text-center py-10 border-2 border-dashed border-gray-200
+                            rounded-xl">
+              <p className="text-3xl mb-2">💳</p>
+              <p className="text-gray-500 text-sm">No transactions yet.</p>
+            </div>
+          ) : (
+            <div className="divide-y divide-gray-50">
+              {transactions.map((tx) => (
+                <div key={tx._id}
+                  className="flex items-center justify-between py-3
+                             hover:bg-gray-50 -mx-2 px-2 rounded-lg transition-colors">
+                  <div className="flex items-center gap-3">
+                    {/* Icon */}
+                    <div className={`w-9 h-9 rounded-full flex items-center justify-center
+                                     text-sm shrink-0
+                      ${tx.type === "withdraw"
+                        ? "bg-red-100 text-red-600"
+                        : "bg-green-100 text-green-600"
+                      }`}>
+                      {tx.type === "withdraw" ? "↑" : "↓"}
+                    </div>
+                    <div>
+                      <p className="text-sm font-semibold text-gray-900 leading-tight">
+                        {tx.dependantName || "Transfer"}
+                      </p>
+                      <p className="text-xs text-gray-400">{tx.merchant}</p>
+                    </div>
+                  </div>
+                  <p className={`text-sm font-bold tabular-nums
+                    ${tx.type === "withdraw" ? "text-red-500" : "text-green-600"}`}>
+                    {tx.type === "withdraw" ? "−" : "+"}
+                    UGX {(tx.amount || 0).toLocaleString()}
                   </p>
                 </div>
+              ))}
+            </div>
+          )}
+        </div>
 
-                <p className="text-red-600 font-semibold">
-                  - UGX {(tx.amount || 0).toLocaleString()}
-                </p>
-              </div>
-            ))}
-          </div>
-        )}
-      </div>
+      </main>
 
+      {/* ── MOBILE BOTTOM NAV ───────────────────────────────────────────────── */}
+      <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t
+                      border-gray-100 shadow-lg z-40">
+        <div className="grid grid-cols-4 h-16">
+          {[
+            { href: "/parent/dashboard",     icon: "⊞", label: "Home"     },
+            { href: "/parent/transfer",      icon: "↗", label: "Transfer" },
+            { href: "/parent/add-dependant", icon: "+", label: "Add Child" },
+            { href: "/parent/transactions",  icon: "☰", label: "History"  },
+          ].map((item) => (
+            <Link key={item.href} href={item.href}
+              className="flex flex-col items-center justify-center gap-1
+                         text-gray-400 hover:text-green-600 transition-colors">
+              <span className="text-lg leading-none">{item.icon}</span>
+              <span className="text-[10px] font-medium">{item.label}</span>
+            </Link>
+          ))}
+        </div>
+      </nav>
+
+      {/* Bottom padding for mobile nav */}
+      <div className="h-16 md:hidden" />
     </div>
   );
 }
