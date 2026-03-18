@@ -13,11 +13,11 @@ const transporter = nodemailer.createTransport({
 });
 
 export async function sendActivationEmail(to: string, token: string) {
-  const baseUrl = process.env.NEXTAUTH_URL ?? "http://localhost:3000";
+  const baseUrl = process.env.NEXTAUTH_URL ?? "https://pesasa.xyz";
   const activationUrl = `${baseUrl}/merchant/activate?token=${token}`;
 
   await transporter.sendMail({
-    from: `"${process.env.SMTP_FROM_NAME ?? "SchoolPay"}" <${process.env.SMTP_FROM_EMAIL}>`,
+    from: `"${process.env.SMTP_FROM_NAME ?? "Pesasa"}" <${process.env.SMTP_FROM_EMAIL}>`,
     to,
     subject: "Activate your merchant account",
     html: `
