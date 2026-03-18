@@ -21,6 +21,9 @@ export interface MerchantDoc extends Document {
   activationToken?: string;
   activationTokenExpiry?: Date;
 
+  resetToken: string;
+  resetTokenExpiry: Date;
+
   createdAt: Date;
   updatedAt: Date;
 }
@@ -88,6 +91,8 @@ const MerchantSchema = new Schema<MerchantDoc>(
     activationTokenExpiry: {
       type: Date,
     },
+    resetToken: { type: String, },
+    resetTokenExpiry: { type: Date, },
   },
   {
     timestamps: true,
