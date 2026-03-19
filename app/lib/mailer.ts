@@ -89,7 +89,7 @@ export async function sendActivationEmail(to: string, token: string) {
 
 export async function sendPasswordResetEmail(to: string, token: string) {
   const baseUrl = process.env.NEXTAUTH_URL ?? "https://pesasa.xyz";
-  const resetUrl = `${baseUrl}/api/merchant/reset-password?token=${token}`;
+  const resetUrl = `${baseUrl}/merchant/reset-password?token=${token}`;
 
   await transporter.sendMail({
     from: `"${process.env.SMTP_FROM_NAME ?? "Pesasa"}" <${process.env.SMTP_FROM_EMAIL}>`,
