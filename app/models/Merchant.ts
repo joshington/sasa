@@ -13,6 +13,8 @@ export interface MerchantDoc extends Document {
 
   commissionBalance: number;
 
+  starknetAddress: string;  //every merchant must have a wallet address
+
   settlementFrequency: "daily" | "weekly" | "monthly";
   lastSettlementDate?: Date;
 
@@ -66,6 +68,10 @@ const MerchantSchema = new Schema<MerchantDoc>(
     commissionBalance: {
       type: Number,
       default: 0,
+    },
+
+    starknetAddress: {
+      type: String,
     },
 
     settlementFrequency: {

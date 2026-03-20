@@ -10,6 +10,7 @@ export interface SettlementDoc extends Document {
   status: "unpaid" | "paid";
   paidAt?: Date;
   transactionCount: number;
+  txHash: string; //generated after settlement
   createdAt: Date;
   updatedAt: Date;
 }
@@ -32,6 +33,7 @@ const SettlementSchema = new Schema<SettlementDoc>(
     },
     paidAt: { type: Date },
     transactionCount: { type: Number, default: 0 },
+    txHash: {type: String},
   },
   { timestamps: true }
 );
