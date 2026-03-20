@@ -1,7 +1,7 @@
 
 
 "use client";
-
+import React from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useState } from "react";
@@ -306,8 +306,7 @@ export default function Home() {
         @media (min-width: 600px) { .hero-image-wrap { display: block; } }
         @media (min-width: 900px) { .hero-image-wrap { max-width: 400px; } }
         .hero-image-wrap img {
-          width: 100%; border-radius: 18px;
-          box-shadow: 0 24px 60px rgba(0,0,0,0.35); display: block;
+          width: 100%; border-radius: 20px; display: block;
         }
         .hero-image-card {
           position: absolute; bottom: -14px; left: -16px;
@@ -800,15 +799,63 @@ export default function Home() {
 
               <div className="hero-image-wrap">
                 <img
-                  src="https://images.unsplash.com/photo-1614935151651-0bea6508db6b?w=600&q=80"
-
-                  alt="Digital payments"
+                  src="/mer.png"
+                  alt="Mobile payment approved on Pesasa"
+                  style={{
+                    width: "100%",
+                    borderRadius: "20px",
+                    boxShadow: "0 24px 60px rgba(0,0,0,0.4), 0 0 0 1px rgba(255,255,255,0.08)",
+                    display: "block",
+                    objectFit: "cover",
+                    objectPosition: "center",
+                  }}
                 />
+                {/* Subtle green glow behind image */}
+                <div style={{
+                  position: "absolute",
+                  inset: "-12px",
+                  borderRadius: "28px",
+                  background: "radial-gradient(ellipse at center, rgba(58,181,74,0.15) 0%, transparent 70%)",
+                  zIndex: -1,
+                  pointerEvents: "none",
+                }} />
+                {/* Bottom-left: payment approved badge */}
                 <div className="hero-image-card">
                   <div className="hero-image-card-icon">✅</div>
                   <div>
-                    <div className="hero-image-card-label">Payment confirmed</div>
+                    <div className="hero-image-card-label">Payment approved</div>
                     <div className="hero-image-card-value">UGX 12,500</div>
+                  </div>
+                </div>
+                {/* Top-right: Pesasa Pay badge */}
+                <div style={{
+                  position: "absolute",
+                  top: "-14px",
+                  right: "-14px",
+                  background: "linear-gradient(135deg, #1a5c1a, #3ab54a)",
+                  borderRadius: "12px",
+                  padding: "10px 14px",
+                  boxShadow: "0 8px 20px rgba(58,181,74,0.35)",
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "7px",
+                  minWidth: "130px",
+                }}>
+                  <div style={{
+                    width: "28px", height: "28px",
+                    background: "rgba(255,255,255,0.15)",
+                    borderRadius: "8px",
+                    display: "flex", alignItems: "center", justifyContent: "center",
+                    fontSize: "14px", flexShrink: 0,
+                  }}>📱</div>
+                  <div>
+                    <div style={{ fontSize: "12px", fontWeight: 700, 
+                      textTransform: "uppercase", letterSpacing: "0.5px", color: "#ffffff", marginBottom: "1px" }}>
+                      Pesasa
+                    </div>
+                    <div style={{ fontSize: "12px", fontWeight: 700, color: "#ffffff", fontFamily: "'Outfit', sans-serif" }}>
+                    
+                    </div>
                   </div>
                 </div>
               </div>
