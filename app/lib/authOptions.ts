@@ -133,7 +133,16 @@ export const authOptions: NextAuthOptions = {
       }
 
       // New or returning parent — your original logic
-      const existingParent = await Parent.findOne({ googleId });
+      //looking by email rather than googleId is the right approach because email is the
+      //stable identifier - Google's providerAccountId can theoretically chnage
+      //if you recreate your OAuth app, but the email stays the same
+      const existingParent = await Parent.findOne({ email: user.email });
+      //==case for exisiting parent
+      if (existingParent) {
+        //always update googleId in case it changed - never try to recreate
+        await Parent.findByIdAndUpdate(existingParent._id, { googleId });
+        return true;
+      }
       if (!existingParent) {
         const parent = await Parent.create({
           googleId,
