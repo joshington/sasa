@@ -30,6 +30,7 @@ export default function ParentDashboard() {
   const [hasPinSet,    setHasPinSet]    = useState(true);
   const [menuOpen,     setMenuOpen]     = useState(false);
   const [loading,      setLoading]      = useState(true);
+  const [stableToast,  setStableToast]  = useState(false);
 
   const chartData = [
     { day: "Mon", amount: 2000 },
@@ -61,6 +62,11 @@ export default function ParentDashboard() {
       });
   }, [session]);
 
+  const handleStablecoinClick = () => {
+    setStableToast(true);
+    setTimeout(() => setStableToast(false), 3500);
+  };
+
   if (status === "loading" || loading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
@@ -78,6 +84,51 @@ export default function ParentDashboard() {
 
   return (
     <div className="min-h-screen bg-gray-50">
+
+      {/* ── COMING SOON TOAST ───────────────────────────────────────────────── */}
+      {stableToast && (
+        <div
+          style={{
+            position: "fixed",
+            bottom: "84px",
+            left: "50%",
+            transform: "translateX(-50%)",
+            zIndex: 9999,
+            background: "#0d1117",
+            border: "1px solid rgba(58,181,74,0.3)",
+            borderRadius: "12px",
+            padding: "12px 20px",
+            display: "flex",
+            alignItems: "center",
+            gap: "10px",
+            boxShadow: "0 8px 32px rgba(0,0,0,0.3)",
+            animation: "slideUp 0.25s ease",
+            whiteSpace: "nowrap",
+          }}
+        >
+          <style>{`
+            @keyframes slideUp {
+              from { opacity: 0; transform: translateX(-50%) translateY(8px); }
+              to   { opacity: 1; transform: translateX(-50%) translateY(0); }
+            }
+          `}</style>
+          <span style={{
+            width: 28, height: 28,
+            background: "rgba(58,181,74,0.12)",
+            borderRadius: "50%",
+            display: "flex", alignItems: "center", justifyContent: "center",
+            fontSize: 14, flexShrink: 0,
+          }}>⚡</span>
+          <div>
+            <p style={{ fontSize: 13, fontWeight: 700, color: "#f0f6fc", marginBottom: 1 }}>
+              Coming Soon — Stablecoin Deposits
+            </p>
+            <p style={{ fontSize: 11, color: "#7d8590" }}>
+              Deposit USDC via Starknet. Powered by StarkZap.
+            </p>
+          </div>
+        </div>
+      )}
 
       {/* ── TOP NAV ─────────────────────────────────────────────────────────── */}
       <nav className="sticky top-0 z-40 bg-white border-b border-gray-100 shadow-sm">
@@ -164,9 +215,9 @@ export default function ParentDashboard() {
               </div>
             </div>
             {[
-              { href: "/parent/dashboard",     label: "Dashboard"     },
-              { href: "/parent/transactions",  label: "Transactions"  },
-              { href: "/parent/add-dependant", label: "Add Child"     },
+              { href: "/parent/dashboard",     label: "Dashboard"        },
+              { href: "/parent/transactions",  label: "Transactions"     },
+              { href: "/parent/add-dependant", label: "Add Child"        },
               { href: "/parent/set-pin",       label: "Set / Change PIN" },
             ].map((item) => (
               <Link key={item.href} href={item.href}
@@ -196,7 +247,7 @@ export default function ParentDashboard() {
             Good day, {firstName} 👋
           </h1>
           <p className="text-gray-500 text-sm mt-1">
-            Here's an overview of your family's spending
+            Here&apos;s an overview of your family&apos;s spending
           </p>
         </div>
 
@@ -228,7 +279,7 @@ export default function ParentDashboard() {
           <div className="md:col-span-2 bg-gradient-to-br from-green-500 via-green-600
                           to-emerald-700 text-white rounded-2xl p-6 shadow-lg
                           shadow-green-200 relative overflow-hidden">
-            {/* Decorative circle */}
+            {/* Decorative circles */}
             <div className="absolute -top-8 -right-8 w-40 h-40 bg-white/10
                             rounded-full pointer-events-none" />
             <div className="absolute -bottom-10 -right-4 w-32 h-32 bg-white/5
@@ -242,7 +293,10 @@ export default function ParentDashboard() {
               Available for transfers
             </p>
 
+            {/* Action buttons */}
             <div className="mt-6 flex flex-wrap gap-3">
+
+              {/* Mobile money deposit */}
               <Link href="/parent/deposit">
                 <button className="bg-white text-green-700 px-5 py-2.5 rounded-xl
                                    font-semibold text-sm hover:shadow-md
@@ -250,6 +304,8 @@ export default function ParentDashboard() {
                   + Deposit
                 </button>
               </Link>
+
+              {/* Transfer to child */}
               <Link href="/parent/transfer">
                 <button
                   disabled={!hasPinSet}
@@ -263,7 +319,83 @@ export default function ParentDashboard() {
                   Transfer to Child
                 </button>
               </Link>
+
+              {/* Stablecoin deposit — coming soon */}
+              <button
+                onClick={handleStablecoinClick}
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "7px",
+                  padding: "10px 18px",
+                  borderRadius: "12px",
+                  border: "1.5px dashed rgba(255,255,255,0.45)",
+                  background: "rgba(255,255,255,0.08)",
+                  color: "rgba(255,255,255,0.75)",
+                  fontSize: "13px",
+                  fontWeight: 600,
+                  cursor: "pointer",
+                  backdropFilter: "blur(4px)",
+                  transition: "all 0.2s",
+                  position: "relative",
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.background = "rgba(255,255,255,0.14)";
+                  e.currentTarget.style.borderColor = "rgba(255,255,255,0.65)";
+                  e.currentTarget.style.color = "#ffffff";
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.background = "rgba(255,255,255,0.08)";
+                  e.currentTarget.style.borderColor = "rgba(255,255,255,0.45)";
+                  e.currentTarget.style.color = "rgba(255,255,255,0.75)";
+                }}
+              >
+                {/* Starknet-ish icon */}
+                <span style={{
+                  width: 20, height: 20,
+                  background: "rgba(255,255,255,0.15)",
+                  borderRadius: "6px",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  fontSize: 11,
+                  flexShrink: 0,
+                }}>◈</span>
+                Deposit USDC
+                {/* Coming soon pill */}
+                <span style={{
+                  fontSize: 9,
+                  fontWeight: 700,
+                  textTransform: "uppercase",
+                  letterSpacing: "0.5px",
+                  background: "rgba(58,181,74,0.35)",
+                  border: "1px solid rgba(58,181,74,0.5)",
+                  borderRadius: "999px",
+                  padding: "1px 6px",
+                  color: "#a8f0b4",
+                  marginLeft: 2,
+                }}>
+                  Soon
+                </span>
+              </button>
+
             </div>
+
+            {/* Starknet attribution line */}
+            <p style={{
+              marginTop: 14,
+              fontSize: 10,
+              color: "rgba(255,255,255,0.35)",
+              display: "flex",
+              alignItems: "center",
+              gap: 5,
+            }}>
+              <span style={{ fontSize: 11 }}>◈</span>
+              USDC deposits powered by{" "}
+              <span style={{ color: "rgba(255,255,255,0.55)", fontWeight: 600 }}>
+                StarkZap on Starknet
+              </span>
+            </p>
           </div>
 
           {/* Quick actions */}
@@ -274,9 +406,9 @@ export default function ParentDashboard() {
             </h3>
             <div className="space-y-2">
               {[
-                { href: "/parent/add-dependant", label: "＋  Add Child",       primary: true  },
-                { href: "/parent/change-pin", label: "🔒  Change PIN", primary: false },
-                { href: "/parent/transactions",   label: "📋  All Transactions",primary: false },
+                { href: "/parent/add-dependant", label: "＋  Add Child",        primary: true  },
+                { href: "/parent/change-pin",    label: "🔒  Change PIN",       primary: false },
+                { href: "/parent/transactions",  label: "📋  All Transactions", primary: false },
               ].map((action) => (
                 <Link key={action.href} href={action.href}>
                   <button className={`w-full text-left px-4 py-2.5 rounded-xl
@@ -289,6 +421,31 @@ export default function ParentDashboard() {
                   </button>
                 </Link>
               ))}
+
+              {/* Stablecoin quick action */}
+              <button
+                onClick={handleStablecoinClick}
+                className="w-full text-left px-4 py-2.5 rounded-xl text-sm
+                           font-medium transition-all duration-200
+                           bg-gray-50 text-gray-400 cursor-pointer
+                           hover:bg-gray-100"
+                style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}
+              >
+                <span>◈  Deposit USDC</span>
+                <span style={{
+                  fontSize: 9,
+                  fontWeight: 700,
+                  textTransform: "uppercase",
+                  letterSpacing: "0.4px",
+                  background: "rgba(58,181,74,0.1)",
+                  border: "1px solid rgba(58,181,74,0.25)",
+                  borderRadius: "999px",
+                  padding: "1px 7px",
+                  color: "#2d8a2d",
+                }}>
+                  Soon
+                </span>
+              </button>
             </div>
           </div>
         </div>
@@ -296,15 +453,15 @@ export default function ParentDashboard() {
         {/* ── STATS ROW ────────────────────────────────────────────────────── */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
           {[
-            { label: "Children",      value: dependants.length,  suffix: ""   },
-            { label: "Transactions",  value: transactions.length, suffix: ""  },
+            { label: "Children",     value: dependants.length,   suffix: "" },
+            { label: "Transactions", value: transactions.length, suffix: "" },
             {
               label: "Total spent",
               value: `UGX ${transactions
                 .filter(t => t.type === "withdraw")
                 .reduce((s, t) => s + t.amount, 0)
                 .toLocaleString()}`,
-              suffix: ""
+              suffix: "",
             },
             {
               label: "Avg per child",
@@ -313,7 +470,7 @@ export default function ParentDashboard() {
                     dependants.reduce((s, d) => s + d.balance, 0) / dependants.length
                   ).toLocaleString()}`
                 : "—",
-              suffix: ""
+              suffix: "",
             },
           ].map((stat) => (
             <div key={stat.label}
@@ -351,7 +508,7 @@ export default function ParentDashboard() {
                 </span>
               </h2>
               <p className="text-xs text-gray-400 mt-0.5">
-                Manage each child's wallet and limits
+                Manage each child&apos;s wallet and limits
               </p>
             </div>
             <Link href="/parent/add-dependant">
@@ -380,9 +537,7 @@ export default function ParentDashboard() {
               {dependants.map((dep) => (
                 <div key={dep._id}
                   className="border border-gray-100 rounded-xl p-4 hover:shadow-md
-                             hover:border-green-200 transition-all duration-200
-                             group">
-                  {/* Avatar + name */}
+                             hover:border-green-200 transition-all duration-200 group">
                   <div className="flex items-center gap-3 mb-3">
                     <div className="w-10 h-10 rounded-full bg-green-100 flex items-center
                                     justify-center text-green-700 font-bold text-sm shrink-0">
@@ -396,7 +551,6 @@ export default function ParentDashboard() {
                     </div>
                   </div>
 
-                  {/* Balance */}
                   <div className="bg-gray-50 rounded-lg px-3 py-2 mb-3">
                     <p className="text-xs text-gray-400">Balance</p>
                     <p className="text-lg font-bold text-green-600">
@@ -444,7 +598,6 @@ export default function ParentDashboard() {
                   className="flex items-center justify-between py-3
                              hover:bg-gray-50 -mx-2 px-2 rounded-lg transition-colors">
                   <div className="flex items-center gap-3">
-                    {/* Icon */}
                     <div className={`w-9 h-9 rounded-full flex items-center justify-center
                                      text-sm shrink-0
                       ${tx.type === "withdraw"
