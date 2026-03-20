@@ -34,10 +34,25 @@ export async function POST(req: Request) {
     const body = await req.json();
     const { name, pin, institute, dailySpendLimit } = body;
 
+    if (!/^\d{4}$/.test(pin)) {
+      return NextResponse.json({ message: "PIN must be exactly 4 digits." }, { status: 400 });
+    }
+    
+
+
+    // Generate a unique smartCardId — retry if collision (extremely rare)
+    let smartCardId = generateSmartCardId();
+    let attempts = 0;
+    while (await Dependant.findOne({ smartCardId })) {
+      smartCardId = generateSmartCardId();
+      attempts++;
+      if (attempts > 10) {
+        return NextResponse.json({ message: "Could not generate unique card ID. Try again." }, { status: 500 });
+      }
+    }
+
     // Hash the PIN before saving
     const hashedPin = await bcrypt.hash(pin, 10);
-
-    const smartCardId = generateSmartCardId();
 
     const dependant = new Dependant({
       parentId: parent._id,
@@ -48,6 +63,8 @@ export async function POST(req: Request) {
       dailySpendLimit,
       balance: 0,
     });
+
+    
 
     await dependant.save();
 
@@ -60,19 +77,41 @@ export async function POST(req: Request) {
 
     //prevent duplicate smart cards, since every child should have one unique
     //smart card
-    const existingCard = await Dependant.findOne({smartCardId});
-    if(existingCard) {
-        return NextResponse.json(
-            {message: "Smart card already registered"},
-            {status: 400}
-        );
-    }
+    //const existingCard = await Dependant.findOne({smartCardId});
+    //if(existingCard) {
+    //    return NextResponse.json(
+    //        {message: "Smart card already registered"},
+    //        {status: 400}
+    //    );
+    //}
     //above prevents 2 children using the same card
 
-    return NextResponse.json({ message: "Dependant added successfully" });
+    return NextResponse.json({
+      message: "Child added successfully.",
+      dependant: {
+        _id: dependant._id,
+        name: dependant.name,
+        smartCardId: dependant.smartCardId,
+        institute: dependant.institute,
+        balance: dependant.balance,
+      },
+    });
   } catch (err: any) {
-    console.error(err);
-    return NextResponse.json({ message: err.message || "Error adding dependant" }, { status: 500 });
+     console.error("[add-dependant]", err);
+
+    // Handle MongoDB duplicate key error as a safety net
+    if (err.code === 11000) {
+      return NextResponse.json(
+        { message: "A duplicate entry was detected. Please try again." },
+        { status: 400 }
+      );
+    }
+
+    return NextResponse.json(
+      { message: err.message || "Error adding child" },
+      { status: 500 }
+    );
   }
 }
+
 

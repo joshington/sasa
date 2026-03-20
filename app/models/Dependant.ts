@@ -6,7 +6,7 @@ export interface DependantDoc extends Document {
   parentId: mongoose.Types.ObjectId;
   name: string;
   pin: string; // hashed
-  smartCardId: {type: String, required:true, unique: true};
+  smartCardId: string;
   institute: string;
   dailySpendLimit: number;
   balance: number;
