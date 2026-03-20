@@ -1,4 +1,5 @@
 
+
 "use client";
 
 import Image from "next/image";
@@ -625,7 +626,7 @@ export default function Home() {
           font-size: 13px; color: rgba(255,255,255,0.5);
           line-height: 1.7; max-width: 280px; margin-bottom: 18px;
         }
-        .footer-starknet-badge {
+        .footer-stablecoin-badge {
           display: inline-flex; align-items: center; gap: 7px;
           background: rgba(58,181,74,0.12);
           border: 1px solid rgba(58,181,74,0.25);
@@ -822,7 +823,7 @@ export default function Home() {
                 { value: "100%",       label: "Cashless & Secure"      },
                 { value: "Real-Time",  label: "Transaction Visibility"  },
                 { value: "MTN+Airtel", label: "Mobile Money Ready"      },
-                { value: "Starknet",   label: "USDC Settlements"        },
+                { value: "Stablecoins", label: "USDC Settlements"        },
               ].map((t) => (
                 <div key={t.label} className="trust-item">
                   <div className="trust-value">{t.value}</div>
@@ -906,8 +907,8 @@ export default function Home() {
                   desc: "Funds flow only to approved merchants. Unauthorised transactions are blocked in real time at the point of sale." },
                 { icon: "📱", title: "Mobile Money Native",
                   desc: "Built for Africa. Deposit via MTN Mobile Money or Airtel Money. No bank account required." },
-                { icon: "◈", title: "USDC on Starknet",
-                  desc: "Merchants receive weekly USDC settlements on Starknet via StarkZap — instant, borderless, verifiable on-chain." },
+                { icon: "◈", title: "Stablecoin Settlements",
+                  desc: "Merchants receive weekly settlements in USDC or other stablecoins — instant, borderless, and verifiable on-chain." },
                 { icon: "📊", title: "Real-Time Analytics",
                   desc: "Live dashboards for every transaction. Parents, employers and NGOs see exactly where every shilling went." },
                 { icon: "🛡️", title: "Enterprise Security",
@@ -966,7 +967,7 @@ export default function Home() {
                 </h2>
                 <p className="merchant-banner-desc">
                   Earn <strong>0.5% commission</strong> on every withdrawal.
-                  Get settled weekly in USDC on Starknet. Serve your
+                  Get settled weekly in stablecoins. Serve your
                   institution&apos;s students or employees with zero friction.
                 </p>
               </div>
@@ -1007,8 +1008,8 @@ export default function Home() {
                   organisations to distribute money that is spent exactly
                   as intended. Built for emerging markets.
                 </p>
-                <div className="footer-starknet-badge">
-                  <span>◈</span> Powered by Starknet
+                <div className="footer-stablecoin-badge">
+                  <span>◈</span> Stablecoin Settlements
                 </div>
               </div>
 
