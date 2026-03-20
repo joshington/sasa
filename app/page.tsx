@@ -800,7 +800,8 @@ export default function Home() {
 
               <div className="hero-image-wrap">
                 <img
-                  src="https://images.unsplash.com/photo-1556742031-c6961e8560b0?w=600&q=80"
+                  src="https://images.unsplash.com/photo-1614935151651-0bea6508db6b?w=600&q=80"
+
                   alt="Digital payments"
                 />
                 <div className="hero-image-card">
