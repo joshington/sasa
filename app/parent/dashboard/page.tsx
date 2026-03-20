@@ -32,15 +32,8 @@ export default function ParentDashboard() {
   const [loading,      setLoading]      = useState(true);
   const [stableToast,  setStableToast]  = useState(false);
 
-  const chartData = [
-    { day: "Mon", amount: 2000 },
-    { day: "Tue", amount: 3500 },
-    { day: "Wed", amount: 1000 },
-    { day: "Thu", amount: 4200 },
-    { day: "Fri", amount: 2800 },
-    { day: "Sat", amount: 500  },
-    { day: "Sun", amount: 0    },
-  ];
+  // 1. Add chartData to state
+  const [chartData, setChartData] = useState<{ day: string; amount: number }[]>([]);
 
   const { data: session, status } = useSession();
 
@@ -58,6 +51,7 @@ export default function ParentDashboard() {
         setDependants(data.dependants || []);
         setTransactions(data.transactions || []);
         setHasPinSet(data.hasPinSet);
+        setChartData(data.chartData || []); // ✅ use real data
         setLoading(false);
       });
   }, [session]);
