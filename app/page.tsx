@@ -721,9 +721,12 @@ export default function Home() {
             </ul>
 
             <div className="nav-ctas">
-              <Link href="/merchant/signin" className="btn-outline">
+              {/*
+                <Link href="/merchant/signin" className="btn-outline">
                 Merchant sign in
               </Link>
+              */}
+              
               <Link href="/auth/signin" className="btn-primary">
                 Get Started →
               </Link>

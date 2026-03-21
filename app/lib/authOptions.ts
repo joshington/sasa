@@ -124,13 +124,12 @@ export const authOptions: NextAuthOptions = {
       if (!user.email) return false;
 
       const googleId = account?.providerAccountId;
-
-      // If this email belongs to a merchant, block Google sign-in and redirect
-      // them to the merchant signin page instead of creating a Parent record.
-      const existingMerchant = await Merchant.findOne({ email: user.email });
-      if (existingMerchant) {
-        return "/merchant/signin?error=UseMerchantLogin";
+      if (!googleId) {
+        console.error("[signIn] Missing providerAccountId");
+        return false;
       }
+      
+      //no merchant check - same email can be both for merchant and parent
 
       // New or returning parent — your original logic
       //looking by email rather than googleId is the right approach because email is the
@@ -140,16 +139,25 @@ export const authOptions: NextAuthOptions = {
       //==case for exisiting parent
       if (existingParent) {
         //always update googleId in case it changed - never try to recreate
-        await Parent.findByIdAndUpdate(existingParent._id, { googleId });
+        if (existingParent.googleId !== googleId) {
+          await Parent.findByIdAndUpdate(existingParent._id, { googleId });
+        }
         return true;
       }
       if (!existingParent) {
-        const parent = await Parent.create({
-          googleId,
-          username: user.name || "Parent",
-          email:    user.email,
-        });
-        await Wallet.create({ parentId: parent._id, balance: 0 });
+        try {
+          const parent = await Parent.create({
+            googleId,
+            username: user.name || "Parent",
+            email:    user.email,
+          });
+          await Wallet.create({ parentId: parent._id, balance: 0 });
+        } catch (err: any) {
+          if (err.code === 11000) return true; // race condition, already exists
+          console.error("[signIn] Parent creation failed:", err);
+          return false;
+        }
+        
       }
 
       return true;
@@ -158,6 +166,8 @@ export const authOptions: NextAuthOptions = {
     // ── Redirect — your original logic, unchanged ─────────────────────────────
     async redirect({ url, baseUrl }) {
       if (url.includes("/merchant")) return `${baseUrl}/merchant/dashboard`;
+      if (url.startsWith(baseUrl)) return url;
+      if (url.startsWith("/")) return `${baseUrl}${url}`;
       return `${baseUrl}/parent/dashboard`;
     },
   },
