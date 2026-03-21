@@ -777,13 +777,14 @@ export default function Home() {
                   Now live in Uganda
                 </div>
                 <h1 className="hero-title">
-                  Money that moves
-                  <span className="hero-title-accent">with purpose.</span>
+                  Money sent,
+                  <span className="hero-title-accent">Spending Controlled.</span>
                 </h1>
                 <p className="hero-desc">
-                  Pesasa gives institutions, families and NGOs
-                  <strong> programmable spending accounts</strong> — so every
-                  shilling reaches exactly where it&apos;s meant to go.
+                   Pesasa puts you in control of how money is spent —
+                    whether you&apos;re sending funds back home, managing
+                    employee budgets, or distributing aid.
+                    <strong> You decide. We enforce it.</strong>
                 </p>
                 <div className="hero-ctas">
                   <Link href="/auth/signin" className="hero-btn-white">
