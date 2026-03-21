@@ -777,8 +777,8 @@ export default function Home() {
                   Now live in Uganda
                 </div>
                 <h1 className="hero-title">
-                  Send Money,
-                  <span className="hero-title-accent">Control how it&apos;s spent.</span>
+                  Send money.
+                  <span className="hero-title-accent">Control Spend.</span>
                 </h1>
                 <p className="hero-desc">
                    Pesasa puts you in control of how money is spent —
