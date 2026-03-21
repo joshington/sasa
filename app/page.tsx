@@ -781,9 +781,9 @@ export default function Home() {
                   <span className="hero-title-accent">Control Spend.</span>
                 </h1>
                 <p className="hero-desc">
-                   Pesasa puts you in control of how money is spent —
-                    whether you&apos;re sending funds back home, managing
-                    employee budgets, or distributing aid.
+                   Pesasa puts you in <strong>control</strong> of how money is <strong>spent</strong>  —
+                    whether you&apos;re <strong>sending funds</strong> back home, 
+                    <strong>managing employee budgets,</strong> or <strong>distributing aid.</strong>
                     <strong> You decide. We enforce it.</strong>
                 </p>
                 <div className="hero-ctas">
