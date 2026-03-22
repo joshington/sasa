@@ -384,11 +384,14 @@ export default function ParentDashboard() {
               alignItems: "center",
               gap: 5,
             }}>
-              <span style={{ fontSize: 11 }}>◈</span>
-              USDC deposits powered by{" "}
-              <span style={{ color: "rgba(255,255,255,0.55)", fontWeight: 600 }}>
-                StarkZap on Starknet
-              </span>
+              {/*
+                  <span style={{ fontSize: 11 }}>◈</span>
+                USDC deposits powered by{" "}
+                <span style={{ color: "rgba(255,255,255,0.55)", fontWeight: 600 }}>
+                  StarkZap on Starknet
+                </span>
+              */}
+              
             </p>
           </div>
 
