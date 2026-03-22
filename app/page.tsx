@@ -827,7 +827,7 @@ export default function Home() {
                 <div className="hero-image-card">
                   <div className="hero-image-card-icon">✅</div>
                   <div>
-                    <div className="hero-image-card-label">Payment approved</div>
+                    <div className="hero-image-card-label">Withdraw approved</div>
                     <div className="hero-image-card-value">UGX 12,500</div>
                   </div>
                 </div>
