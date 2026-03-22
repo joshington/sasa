@@ -777,7 +777,7 @@ export default function Home() {
                   Now live in Uganda
                 </div>
                 <h1 className="hero-title">
-                  Send money.
+                  Send money,
                   <span className="hero-title-accent">Control Spend.</span>
                 </h1>
                 <p className="hero-desc">
