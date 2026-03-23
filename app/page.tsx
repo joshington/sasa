@@ -508,7 +508,7 @@ export default function Home() {
             <div className="section-label">Real world</div>
             <h2 className="section-title">Applications that matter</h2>
             <p className="section-desc">
-              From school  in Kampala to aid programmes across East Africa —
+              From schools  in Kampala to aid programmes across East Africa —
               Pesasa is already at work.
             </p>
             <div className="cards-3">
