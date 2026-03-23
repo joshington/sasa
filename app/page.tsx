@@ -514,8 +514,7 @@ export default function Home() {
             <div className="cards-3">
               {[
                 { n: "01", title: "Student Allowances",
-                  desc: "Parents top up children's smart accounts. Students spend only within Set Limit, 
-                    Parent monitors and Controls Spending." },
+                  desc: "Parents top up children's smart accounts. Students spend only within Set Limit. Parent monitors and Controls Spending." },
                 { n: "02", title: "Aid Distribution",
                   desc: "NGOs distribute food vouchers that beneficiaries redeem at approved merchants. Every shilling tracked, none wasted." },
                 { n: "03", title: "Employee Allowances",
