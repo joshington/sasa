@@ -22,7 +22,7 @@ export default function robots(): MetadataRoute.Robots {
 
 **Create an OG image for social sharing:**
 
-Create a `1200 x 630px` image and save it as `public/og-image.png`. It should have:
+Create a 1200 x 630px image and save it as public/og-image.png. It should have:
 - Pesasa logo
 - Tagline: "Send money. Control how it's spent."
 - Green brand background
@@ -64,7 +64,7 @@ Low search volume in Uganda is actually good right now — you can rank page 1 v
 
 **Create a `/blog` section on your website**
 
-Every article you write on Medium should also live on `pesasa.xyz/blog`. Medium is good for distribution but Google gives more SEO credit to content on your own domain.
+Every article you write on Medium should also live on pesasa.xyz/blog. Medium is good for distribution but Google gives more SEO credit to content on your own domain.
 pesasa.xyz/blog/black-tax-infrastructure-problem
 pesasa.xyz/blog/cash-in-schools-problem-uganda
 pesasa.xyz/blog/diaspora-remittance-accountability
