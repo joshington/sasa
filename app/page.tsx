@@ -486,7 +486,7 @@ export default function Home() {
             <div className="cards-3">
               {[
                 { icon: <RiParentLine size={26} />, title: "Families",
-                  desc: "Parents top up children's smart accounts. Kids spend only at approved school merchants — cafeterias, bookshops, tuck shops." },
+                  desc: "Parents top up children's smart accounts. Students spend only within Set Limit, Parent monitors and Controls Spending" },
                 { icon: <FaBuilding size={24} />, title: "Companies",
                   desc: "Issue controlled allowances for transport, meals or fieldwork. Real-time visibility into every employee spend." },
                 { icon: <FaGlobeAfrica size={24} />, title: "NGOs",
@@ -508,13 +508,14 @@ export default function Home() {
             <div className="section-label">Real world</div>
             <h2 className="section-title">Applications that matter</h2>
             <p className="section-desc">
-              From school canteens in Kampala to aid programmes across East Africa —
+              From school  in Kampala to aid programmes across East Africa —
               Pesasa is already at work.
             </p>
             <div className="cards-3">
               {[
                 { n: "01", title: "Student Allowances",
-                  desc: "Parents send money that students spend only at approved school merchants like cafeterias and bookstores. Zero cash leakage." },
+                  desc: "Parents top up children's smart accounts. Students spend only within Set Limit, 
+                    Parent monitors and Controls Spending." },
                 { n: "02", title: "Aid Distribution",
                   desc: "NGOs distribute food vouchers that beneficiaries redeem at approved merchants. Every shilling tracked, none wasted." },
                 { n: "03", title: "Employee Allowances",
@@ -578,7 +579,8 @@ export default function Home() {
                 { icon: <BsWallet2 size={22} />,       title: "Create Your Wallet",  desc: "Sign up with Google. Your Pesasa wallet is ready instantly." },
                 { icon: <BsPeopleFill size={22} />,    title: "Add Beneficiaries",   desc: "Add children, employees or aid recipients. Set their daily spend limits." },
                 { icon: <BsCashCoin size={22} />,      title: "Fund Your Wallet",    desc: "Deposit via MTN or Airtel Mobile Money. Funds appear immediately." },
-                { icon: <BsClipboardCheck size={22} />, title: "Controlled Spending", desc: "Beneficiaries spend only at approved Pesasa merchants. You see it all in real time." },
+                { icon: <BsClipboardCheck size={22} />, title: "Controlled Spending", 
+                 desc: "Beneficiaries spend only that which you have regulated. You see it all in real time." },
               ].map((s) => (
                 <div key={s.title} className="step">
                   <div className="step-icon-wrap">{s.icon}</div>
