@@ -19,9 +19,58 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Pesasa | Controlled Digital Spending",
+  default: "Pesasa — Send Money. Control How It's Spent.",
+  template: "%s | Pesasa",
   description:
-    "Pesasa enables institutions, NGOs, families and companies to distribute programmable money that can only be spent for its intended purpose.",
+        "Pesasa is a controlled spending platform for families, companies and NGOs. Send money to children, employees or beneficiaries and control exactly how every shilling is spent.",
+  keywords: [
+    "controlled spending Uganda",
+    "school allowance app Uganda",
+    "send money Uganda family",
+    "black tax solution",
+    "diaspora remittance control",
+    "fintech Uganda",
+    "employee allowance management Africa",
+    "NGO aid distribution Africa",
+  ],
+  metadataBase: new URL("https://pesasa.xyz"),
+  openGraph: {
+    title: "Pesasa — Send Money. Control How It's Spent.",
+    description:
+      "Send money to children, employees or beneficiaries and control exactly how every shilling is spent.",
+    url: "https://pesasa.xyz",
+    siteName: "Pesasa",
+    images: [
+      {
+        url: "/newli.png", // create a 1200x630px image
+        width: 1200,
+        height: 630,
+        alt: "Pesasa — Controlled Spending Platform",
+      },
+    ],
+    locale: "en_UG",
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Pesasa — Send Money. Control How It's Spent.",
+    description:
+      "Controlled spending platform for families, companies and NGOs in Uganda.",
+    images: ["/newli.png"],
+    creator: "@pesasapp", 
+  },
+   robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      "max-image-preview": "large",
+    },
+  },
+  alternates: {
+    canonical: "https://pesasa.xyz",
+  },
   icons: {
     icon: "/pesa32.png",
   },
