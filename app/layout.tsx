@@ -19,8 +19,10 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  default: "Pesasa — Send Money. Control How It's Spent.",
-  template: "%s | Pesasa",
+  title: {
+    default: "Pesasa — Send Money. Control How It's Spent.",
+    template: "%s | Pesasa",
+  },
   description:
         "Pesasa is a controlled spending platform for families, companies and NGOs. Send money to children, employees or beneficiaries and control exactly how every shilling is spent.",
   keywords: [
