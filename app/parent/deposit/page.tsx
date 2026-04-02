@@ -1,8 +1,6 @@
-
-
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useSession } from "next-auth/react";
 import Link from "next/link";
 import Image from "next/image";
@@ -12,12 +10,14 @@ export default function DepositPage() {
   const { data: session, status } = useSession();
   const router = useRouter();
 
-  const [amount,        setAmount]        = useState("");
+  const [amount, setAmount] = useState("");
+  const [phone, setPhone] = useState("");
   const [walletBalance, setWalletBalance] = useState(0);
-  const [fetching,      setFetching]      = useState(true);
-  const [loading,       setLoading]       = useState(false);
-  const [result,        setResult]        = useState<"success" | "error" | null>(null);
-  const [message,       setMessage]       = useState("");
+  const [fetching, setFetching] = useState(true);
+  const [loading, setLoading] = useState(false);
+  const [result, setResult] = useState<"success" | "error" | "pending" | null>(null);
+  const [message, setMessage] = useState("");
+  const pollRef = useRef<NodeJS.Timeout | null>(null);
 
   const MIN_DEPOSIT = 5000;
   const quickAmounts = [5000, 10000, 20000, 50000, 100000];
@@ -37,9 +37,72 @@ export default function DepositPage() {
       });
   }, [session]);
 
-  const numAmount   = Number(amount) || 0;
-  const belowMin    = numAmount > 0 && numAmount < MIN_DEPOSIT;
-  const canDeposit  = numAmount >= MIN_DEPOSIT && !loading;
+  // Cleanup polling on unmount
+  useEffect(() => {
+    return () => {
+      if (pollRef.current) clearInterval(pollRef.current);
+    };
+  }, []);
+
+  const numAmount = Number(amount) || 0;
+  const belowMin = numAmount > 0 && numAmount < MIN_DEPOSIT;
+
+  // Normalize phone to +256XXXXXXXXX
+  const normalizePhone = (raw: string): string => {
+    let p = raw.trim().replace(/\s+/g, "");
+    if (p.startsWith("+256")) return p;
+    if (p.startsWith("256")) return "+" + p;
+    if (p.startsWith("0")) return "+256" + p.slice(1); // 07x → +2567x
+    return "+256" + p;
+  };
+
+  const phoneValid = (() => {
+    const normalized = normalizePhone(phone);
+    return /^\+256\d{9}$/.test(normalized);
+  })();
+
+  const canDeposit = numAmount >= MIN_DEPOSIT && phoneValid && !loading;
+
+  const pollStatus = (reference: string) => {
+    let attempts = 0;
+    const MAX = 24; // 2 minutes max (24 × 5s)
+
+    pollRef.current = setInterval(async () => {
+      attempts++;
+      try {
+        const res = await fetch(`/api/parent/deposit/status?reference=${reference}`);
+        const data = await res.json();
+
+        if (data.status === "completed") {
+          clearInterval(pollRef.current!);
+          setLoading(false);
+          setResult("success");
+          setMessage(`UGX ${numAmount.toLocaleString()} deposited successfully!`);
+          setAmount("");
+          setPhone("");
+          // Refresh balance then redirect
+          fetch("/api/parent/dashboard")
+            .then((r) => r.json())
+            .then((d) => {
+              setWalletBalance(d.balance || 0);
+              setTimeout(() => router.push("/parent/dashboard"), 2500);
+            });
+        } else if (data.status === "failed") {
+          clearInterval(pollRef.current!);
+          setLoading(false);
+          setResult("error");
+          setMessage("Payment was not completed. Please try again.");
+        } else if (attempts >= MAX) {
+          clearInterval(pollRef.current!);
+          setLoading(false);
+          setResult("error");
+          setMessage("Payment timed out. If you approved the request, your balance will update shortly.");
+        }
+      } catch {
+        // keep polling on network blip
+      }
+    }, 5000);
+  };
 
   const handleDeposit = async () => {
     if (!canDeposit) return;
@@ -47,26 +110,24 @@ export default function DepositPage() {
     setResult(null);
     setMessage("");
 
+    const msisdn = normalizePhone(phone);
+
     const res = await fetch("/api/parent/deposit", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ amount: numAmount }),
+      body: JSON.stringify({ amount: numAmount, msisdn }),
     });
 
     const data = await res.json();
-    setLoading(false);
 
-    if (res.ok) {
-      setResult("success");
-      setMessage(`UGX ${numAmount.toLocaleString()} deposited successfully.`);
-      setAmount("");
-      // Refresh balance
-      fetch("/api/parent/dashboard")
-        .then((r) => r.json())
-        .then((d) => setWalletBalance(d.balance || 0));
+    if (res.ok && data.reference) {
+      setResult("pending");
+      setMessage(`A payment request of UGX ${numAmount.toLocaleString()} has been sent to ${msisdn}. Please approve it on your phone.`);
+      pollStatus(data.reference);
     } else {
+      setLoading(false);
       setResult("error");
-      setMessage(data.error || data.message || "Deposit failed. Please try again.");
+      setMessage(data.error || "Failed to initiate payment. Please try again.");
     }
   };
 
@@ -238,6 +299,39 @@ export default function DepositPage() {
           letter-spacing: 0.3px; flex-shrink: 0;
         }
 
+        /* Phone input */
+        .dp-phone-wrap {
+          position: relative; margin-bottom: 18px;
+        }
+        .dp-phone-prefix {
+          position: absolute; left: 16px; top: 50%;
+          transform: translateY(-50%);
+          font-size: 13px; font-weight: 700;
+          color: #3ab54a; pointer-events: none;
+          font-family: 'DM Mono', monospace;
+          display: flex; align-items: center; gap: 6px;
+        }
+        .dp-phone-flag { font-size: 16px; }
+        .dp-phone-input {
+          width: 100%;
+          padding: 13px 16px 13px 80px;
+          border: 1.5px solid #d1fae5;
+          border-radius: 12px;
+          font-size: 15px; font-weight: 600;
+          font-family: 'DM Mono', monospace;
+          color: #1a5c1a; background: #f9fefb;
+          outline: none;
+          transition: border-color 0.18s, box-shadow 0.18s;
+        }
+        .dp-phone-input:focus {
+          border-color: #3ab54a;
+          box-shadow: 0 0 0 3px rgba(58,181,74,0.12);
+        }
+        .dp-phone-input::placeholder { color: #d1d5db; font-weight: 400; font-size: 13px; }
+        .dp-phone-hint {
+          font-size: 11px; color: #9ca3af; margin-top: 5px;
+        }
+
         /* Amount input */
         .dp-amount-wrap {
           position: relative; margin-bottom: 12px;
@@ -327,27 +421,41 @@ export default function DepositPage() {
           padding: 13px 16px; border-radius: 12px; margin-bottom: 16px;
           animation: fadeIn 0.3s ease;
         }
-        .dp-feedback.success {
-          background: #f0fdf4; border: 1px solid #bbf7d0;
-        }
-        .dp-feedback.error {
-          background: #fef2f2; border: 1px solid #fecaca;
-        }
+        .dp-feedback.success { background: #f0fdf4; border: 1px solid #bbf7d0; }
+        .dp-feedback.error   { background: #fef2f2; border: 1px solid #fecaca; }
+        .dp-feedback.pending { background: #fffbeb; border: 1px solid #fde68a; }
+
         .dp-feedback-icon {
           width: 26px; height: 26px; border-radius: 50%;
           display: flex; align-items: center; justify-content: center;
           font-size: 13px; flex-shrink: 0;
         }
-        .dp-feedback.success .dp-feedback-icon { background: #3ab54a; }
-        .dp-feedback.error   .dp-feedback-icon { background: #ef4444; }
-        .dp-feedback-title {
-          font-size: 13px; font-weight: 700; margin-bottom: 2px;
-        }
+        .dp-feedback.success .dp-feedback-icon { background: #3ab54a; color: #fff; }
+        .dp-feedback.error   .dp-feedback-icon { background: #ef4444; color: #fff; }
+        .dp-feedback.pending .dp-feedback-icon { background: #f59e0b; color: #fff; }
+
+        .dp-feedback-title { font-size: 13px; font-weight: 700; margin-bottom: 2px; }
         .dp-feedback.success .dp-feedback-title { color: #166534; }
         .dp-feedback.error   .dp-feedback-title { color: #dc2626; }
-        .dp-feedback-sub { font-size: 12px; }
+        .dp-feedback.pending .dp-feedback-title { color: #92400e; }
+
+        .dp-feedback-sub { font-size: 12px; line-height: 1.5; }
         .dp-feedback.success .dp-feedback-sub { color: #15803d; }
         .dp-feedback.error   .dp-feedback-sub { color: #ef4444; }
+        .dp-feedback.pending .dp-feedback-sub { color: #b45309; }
+
+        /* Pending pulse */
+        .dp-pulse {
+          display: inline-block;
+          width: 8px; height: 8px; border-radius: 50%;
+          background: #f59e0b;
+          animation: pulse 1.2s ease-in-out infinite;
+          margin-right: 6px;
+        }
+        @keyframes pulse {
+          0%, 100% { opacity: 1; transform: scale(1); }
+          50% { opacity: 0.4; transform: scale(0.75); }
+        }
 
         @keyframes fadeIn {
           from { opacity: 0; transform: translateY(-4px); }
@@ -421,12 +529,8 @@ export default function DepositPage() {
             {/* Balance bar */}
             <div className="dp-balance-bar">
               <div className="dp-balance-label">Current Wallet Balance</div>
-              <div className="dp-balance-value">
-                UGX {walletBalance.toLocaleString()}
-              </div>
-              <div className="dp-balance-note">
-                Funds are available immediately after deposit
-              </div>
+              <div className="dp-balance-value">UGX {walletBalance.toLocaleString()}</div>
+              <div className="dp-balance-note">Funds are available immediately after deposit</div>
             </div>
 
             {/* Main card */}
@@ -434,9 +538,7 @@ export default function DepositPage() {
               <div className="dp-card-header">
                 <div className="dp-card-icon">💰</div>
                 <h1 className="dp-card-title">Deposit to Wallet</h1>
-                <p className="dp-card-sub">
-                  Top up your wallet using mobile money or bank transfer.
-                </p>
+                <p className="dp-card-sub">Top up your wallet using MTN or Airtel Mobile Money.</p>
               </div>
 
               <div className="dp-card-body">
@@ -447,6 +549,18 @@ export default function DepositPage() {
                     <div className="dp-feedback-icon">✓</div>
                     <div>
                       <div className="dp-feedback-title">Deposit Successful!</div>
+                      <div className="dp-feedback-sub">{message} Redirecting to dashboard…</div>
+                    </div>
+                  </div>
+                )}
+                {result === "pending" && (
+                  <div className="dp-feedback pending">
+                    <div className="dp-feedback-icon">⏳</div>
+                    <div>
+                      <div className="dp-feedback-title">
+                        <span className="dp-pulse" />
+                        Awaiting Payment Approval
+                      </div>
                       <div className="dp-feedback-sub">{message}</div>
                     </div>
                   </div>
@@ -467,6 +581,26 @@ export default function DepositPage() {
                   Minimum deposit is <strong>UGX 5,000</strong> per transaction.
                 </div>
 
+                {/* Phone number */}
+                <div className="dp-section">Mobile Money Number</div>
+                <div className="dp-phone-wrap">
+                  <span className="dp-phone-prefix">
+                    <span className="dp-phone-flag">🇺🇬</span>
+                    +256
+                  </span>
+                  <input
+                    type="tel"
+                    className="dp-phone-input"
+                    placeholder="07X XXX XXXX or +256 7XX XXXXXX"
+                    value={phone}
+                    disabled={loading}
+                    onChange={(e) => { setPhone(e.target.value); setResult(null); }}
+                  />
+                </div>
+                <p className="dp-phone-hint" style={{ marginBottom: 18, marginTop: -10 }}>
+                  Enter your MTN or Airtel number. You&apos;ll receive a prompt to approve the payment.
+                </p>
+
                 {/* Amount */}
                 <div className="dp-section">Enter Amount (UGX)</div>
 
@@ -478,14 +612,11 @@ export default function DepositPage() {
                     placeholder="0"
                     value={amount}
                     min={0}
-                    onChange={(e) => {
-                      setAmount(e.target.value);
-                      setResult(null);
-                    }}
+                    disabled={loading}
+                    onChange={(e) => { setAmount(e.target.value); setResult(null); }}
                   />
                 </div>
 
-                {/* Below min warning */}
                 {belowMin && (
                   <p className="dp-below-min">
                     ⚠️ Minimum deposit is UGX {MIN_DEPOSIT.toLocaleString()}.
@@ -499,6 +630,7 @@ export default function DepositPage() {
                       key={q}
                       type="button"
                       className={`dp-quick-btn${numAmount === q ? " active" : ""}`}
+                      disabled={loading}
                       onClick={() => { setAmount(String(q)); setResult(null); }}
                     >
                       {q >= 1000 ? `${q / 1000}k` : q}
@@ -513,15 +645,17 @@ export default function DepositPage() {
                   <div className="dp-preview">
                     <div className="dp-preview-row">
                       <span className="dp-preview-label">Depositing</span>
+                      <span className="dp-preview-value">UGX {numAmount.toLocaleString()}</span>
+                    </div>
+                    <div className="dp-preview-row">
+                      <span className="dp-preview-label">From</span>
                       <span className="dp-preview-value">
-                        UGX {numAmount.toLocaleString()}
+                        {phone ? normalizePhone(phone) : "—"}
                       </span>
                     </div>
                     <div className="dp-preview-row">
                       <span className="dp-preview-label">Current balance</span>
-                      <span className="dp-preview-value">
-                        UGX {walletBalance.toLocaleString()}
-                      </span>
+                      <span className="dp-preview-value">UGX {walletBalance.toLocaleString()}</span>
                     </div>
                     <div className="dp-preview-row">
                       <span className="dp-preview-label">Balance after deposit</span>
@@ -540,14 +674,10 @@ export default function DepositPage() {
                   onClick={handleDeposit}
                 >
                   {loading ? (
-                    <><div className="dp-spinner" /> Processing…</>
+                    <><div className="dp-spinner" /> Waiting for approval…</>
                   ) : (
                     <>
-                      Deposit
-                      {numAmount >= MIN_DEPOSIT
-                        ? ` UGX ${numAmount.toLocaleString()}`
-                        : ""
-                      } →
+                      Deposit{numAmount >= MIN_DEPOSIT ? ` UGX ${numAmount.toLocaleString()}` : ""} →
                     </>
                   )}
                 </button>
@@ -556,7 +686,6 @@ export default function DepositPage() {
                 <div className="dp-methods">
                   <div className="dp-method-pill">📱 MTN Mobile Money</div>
                   <div className="dp-method-pill">📱 Airtel Money</div>
-                  <div className="dp-method-pill">🏦 Bank Transfer</div>
                 </div>
 
               </div>
