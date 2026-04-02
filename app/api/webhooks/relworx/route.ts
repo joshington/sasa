@@ -4,9 +4,7 @@ import { NextRequest, NextResponse } from "next/server";
 import dbConnect from "@/app/utils/dbConnect";
 import Parent from "@/app/models/Parent";
 import Transaction from "@/app/models/Transaction";
-//import dbConnect from "../../../../utils/dbConnect";
-//import Parent from "../../../../models/Parent";
-//import Transaction from "../../../../models/Transaction";
+
 
 export async function POST(req: NextRequest) {
   await dbConnect();
