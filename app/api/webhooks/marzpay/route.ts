@@ -4,7 +4,7 @@ import { NextRequest, NextResponse } from "next/server";
 import dbConnect from "@/app/utils/dbConnect";
 import Parent from "@/app/models/Parent";
 import Transaction from "@/app/models/Transaction";
-
+import Wallet from "@/app/models/Wallet";
 
 export async function POST(req: NextRequest) {
   await dbConnect();
@@ -45,12 +45,12 @@ export async function POST(req: NextRequest) {
   if (event_type === "collection.completed" && transaction.status === "completed") {
     const amount = transaction.amount?.raw ?? tx.amount;
 
-    // Credit the parent's balance
-    const parent = await Parent.findById(tx.parentId);
-    if (parent) {
-      parent.balance = (parent.balance || 0) + amount;
-      await parent.save();
-    }
+    // ✅ Update Wallet balance (NOT Parent.balance)
+    await Wallet.findOneAndUpdate(
+      { parentId: tx.parentId },
+      { $inc: { balance: amount } },
+      { upsert: true }
+    );
 
     await Transaction.findOneAndUpdate(
       { reference },
