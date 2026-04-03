@@ -605,7 +605,7 @@ export default function ParentDashboard() {
                     </div>
                     <div>
                       <p className="text-sm font-semibold text-gray-900 leading-tight">
-                        {tx.dependantName || "Transfer"}
+                        {tx.dependantName || "Deposit"}
                       </p>
                       <p className="text-xs text-gray-400">{tx.merchant}</p>
                     </div>
