@@ -7,6 +7,7 @@ import Image from "next/image";
 import ConditionalHeader from "@/app/components/ConditionalHeader";
 import InactivityGuard from "@/app/components/InactivityGuard";
 import PageWrapper       from "@/app/components/PageWrapper";
+import WhatsAppButton from "@/app/components/WhatsAppButton";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -92,7 +93,7 @@ export default function RootLayout({
         <Providers>
           <InactivityGuard /> {/* ← new component to auto-logout after inactivity */}
           <ConditionalHeader /> {/* ← replaces the old hardcoded <header> */}
-
+          <WhatsAppButton /> {/* ← new floating WhatsApp contact button */}
           <PageWrapper>{children}</PageWrapper>
         </Providers>
       </body>
