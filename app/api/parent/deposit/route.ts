@@ -6,10 +6,10 @@ import { authOptions } from "../../auth/[...nextauth]/route";
 import dbConnect from "../../../utils/dbConnect";
 import Parent from "../../../models/Parent";
 import Transaction from "../../../models/Transaction";
-import { randomBytes } from "crypto";
+import { randomUUID } from "crypto";
 
-const RELWORX_API_KEY  = process.env.RELWORX_API_KEY!;
-const RELWORX_ACCOUNT  = process.env.RELWORX_ACCOUNT_NO!;
+const MARZ_API_KEY  = process.env.MARZ_API_KEY!; // Base64 encoded Basic auth credentials
+const MARZ_BASE_URL = "https://wallet.wearemarz.com/api/v1";
 
 export async function POST(req: NextRequest) {
   const session = await getServerSession(authOptions);
@@ -22,8 +22,8 @@ export async function POST(req: NextRequest) {
   const { amount, msisdn } = await req.json();
 
   // ── Validate ──────────────────────────────────────────────────────────────
-  if (!amount || typeof amount !== "number" || amount < 5000) {
-    return NextResponse.json({ error: "Minimum deposit is UGX 5,000" }, { status: 400 });
+  if (!amount || typeof amount !== "number" || amount < 500) {
+    return NextResponse.json({ error: "Minimum deposit is UGX 500" }, { status: 400 });
   }
   if (!msisdn || !/^\+256\d{9}$/.test(msisdn)) {
     return NextResponse.json({ error: "Invalid phone number" }, { status: 400 });
@@ -35,8 +35,8 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Parent not found" }, { status: 404 });
   }
 
-  // ── Generate unique reference ─────────────────────────────────────────────
-  const reference = randomBytes(16).toString("hex"); // 32 chars, within 8-36 limit
+  // ── Generate UUID reference (MarzPay REQUIRES UUID v4 format) ─────────────
+  const reference = randomUUID();
 
   // ── Create pending transaction ────────────────────────────────────────────
   await Transaction.create({
@@ -50,46 +50,52 @@ export async function POST(req: NextRequest) {
     timestamp: new Date(),
   });
 
-  // ── Call Relworx ──────────────────────────────────────────────────────────
+  // ── Call MarzPay ──────────────────────────────────────────────────────────
   try {
-    const relworxRes = await fetch("https://payments.relworx.com/api/mobile-money/request-payment", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "Accept": "application/vnd.relworx.v2",
-        "Authorization": `Bearer ${RELWORX_API_KEY}`,
-      },
-      body: JSON.stringify({
-        account_no:  RELWORX_ACCOUNT,
-        reference,
-        msisdn,
-        currency:    "UGX",
-        amount,
-        description: `Pesasa wallet deposit for ${parent.email}`,
-      }),
+    // MarzPay uses multipart/form-data
+    const formData = new FormData();
+    formData.append("phone_number", msisdn);
+    formData.append("amount",       String(amount));
+    formData.append("country",      "UG");
+    formData.append("reference",    reference);
+    formData.append("description",  `Pesasa wallet deposit`);
+    formData.append("callback_url", `${process.env.NEXTAUTH_URL}/api/webhooks/marzpay`);
+
+    const marzRes = await fetch(`${MARZ_BASE_URL}/collect-money`, {
+      method:  "POST",
+      headers: { Authorization: `Basic ${MARZ_API_KEY}` },
+      body:    formData,
     });
 
-    const relworxData = await relworxRes.json();
+    const marzData = await marzRes.json();
+    console.log("[MarzPay collect]", JSON.stringify(marzData));
 
-    if (!relworxRes.ok || !relworxData.success) {
-      // Mark transaction as failed
+    if (!marzRes.ok || marzData.status !== "success") {
       await Transaction.findOneAndUpdate({ reference }, { status: "failed" });
       return NextResponse.json(
-        { error: relworxData.message || "Payment initiation failed. Please try again." },
+        { error: marzData.message || "Payment initiation failed. Please try again." },
         { status: 502 }
       );
     }
 
-    // Return reference so frontend can poll for status
+    // Store MarzPay's UUID so we can look up status directly if needed
+    const marzUuid = marzData?.data?.transaction?.uuid;
+    if (marzUuid) {
+      await Transaction.findOneAndUpdate({ reference }, { $set: { marzUuid } });
+    }
+
     return NextResponse.json({
-      success: true,
+      success:   true,
       reference,
-      message: "Payment request sent. Awaiting approval.",
+      message:   "Payment request sent. Awaiting approval.",
     });
 
   } catch (err) {
-    console.error("Relworx error:", err);
+    console.error("[MarzPay] error:", err);
     await Transaction.findOneAndUpdate({ reference }, { status: "failed" });
-    return NextResponse.json({ error: "Payment service unavailable. Please try again." }, { status: 502 });
+    return NextResponse.json(
+      { error: "Payment service unavailable. Please try again." },
+      { status: 502 }
+    );
   }
 }
