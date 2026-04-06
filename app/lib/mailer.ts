@@ -39,7 +39,7 @@ export async function sendActivationEmail(to: string, token: string) {
                     <td style="background:#0f172a;padding:32px 40px;">
                       <p style="margin:0;font-size:22px;font-weight:700;color:#ffffff;
                                  letter-spacing:-0.5px;">
-                        SchoolPay <span style="color:#38bdf8;">Merchant</span>
+                        Pesasa <span style="color:#38bdf8;">Merchant</span>
                       </p>
                     </td>
                   </tr>
