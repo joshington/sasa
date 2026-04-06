@@ -8,6 +8,7 @@ import ConditionalHeader from "@/app/components/ConditionalHeader";
 import InactivityGuard from "@/app/components/InactivityGuard";
 import PageWrapper       from "@/app/components/PageWrapper";
 import WhatsAppButton from "@/app/components/WhatsAppButton";
+import PageTracker from "@/app/components/PageTracker";
 import "./globals.css";
 
 const geistSans = Geist({
