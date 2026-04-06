@@ -67,10 +67,13 @@ export default function TransferPage() {
     if (res.ok) {
       setResult("success");
       setAmount("");
-      // Refresh balance
+      // Refresh balance, then redirect
       fetch("/api/parent/dashboard")
         .then((r) => r.json())
-        .then((d) => setWalletBalance(d.balance || 0));
+        .then((d) => {
+          setWalletBalance(d.balance || 0);
+          setTimeout(() => router.push("/parent/dashboard"), 2000); // redirect to dashboard after 2 secs
+        });
     } else {
       setResult("error");
       setErrorMsg(data.error || "Transfer failed. Please try again.");
