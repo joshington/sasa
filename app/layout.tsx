@@ -91,6 +91,7 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
         <Providers>
+          <PageTracker />  
           <InactivityGuard /> {/* ← new component to auto-logout after inactivity */}
           <ConditionalHeader /> {/* ← replaces the old hardcoded <header> */}
           <WhatsAppButton /> {/* ← new floating WhatsApp contact button */}
