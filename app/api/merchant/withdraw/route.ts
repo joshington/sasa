@@ -8,6 +8,7 @@ import mongoose from "mongoose";
 import dbConnect from "@/app/utils/dbConnect";
 import { getMerchantSession } from "@/app/utils/merchantAuth";
 import Dependant from "@/app/models/Dependant";
+import Merchant from "@/app/models/Merchant";
 import Transaction from "@/app/models/Transaction";
 import { generateReference } from "@/app/utils/generateReference";
 
@@ -133,7 +134,7 @@ export async function POST(req: Request) {
     await dependant.save({ session: dbSession });
 
     // 2. Credit commission to merchant
-    await (await import("@/app/models/Merchant")).default.findByIdAndUpdate(
+    await Merchant.findByIdAndUpdate(
       merchant._id,
       { $inc: { commissionBalance: merchantCommission } },
       { session: dbSession }
